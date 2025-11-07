@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bild‑Maske 55×71 mm – Export PNG/PDF</title>
+  <meta name="description" content="Bild in 55×71 mm-Rahmen laden, verschieben/zoomen und als PNG oder PDF exportieren. Perfekt für GitHub Pages (keine Build-Tools).">
+  <style>
+    :root { --bg:#f7f7f8; --fg:#111; --muted:#666; --card:#fff; --border:#dcdcdc; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:var(--bg); color:var(--fg); }
+    .wrap { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p.lead { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+    @media (max-width: 840px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; }
+    input[type="file"] { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #fff; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row + .row { margin-top: 8px; }
+    .btn { appearance: none; border: 1px solid var(--border); background: #fff; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: #f2f2f2; }
+    .btn:active { transform: translateY(1px); }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    /* Vorschau mit physischer Größe in mm (nur Anzeige) */
+    .previewShell { width: 55mm; height: 71mm; border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; }
+    canvas { position:absolute; inset:0; width:100%; height:100%; }
+    .drop { position:absolute; inset:0; display:grid; place-content:center; color:#777; font-size: 13px; }
+  </style>
+  <!-- jsPDF für PDF-Export (CDN) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Bild‑Maske 55×71 mm</h1>
+    <p class="lead">Bild hochladen, im **55×71 mm**‑Rahmen verschieben/zoomen und als <strong>PDF</strong> (millimetergenau) oder <strong>PNG</strong> exportieren.
+      Beim Drucken in 100 % / „Tatsächliche Größe“ ohne „An Seite anpassen“ drucken.</p>
+
+    <div class="grid">
+      <!-- Linke Spalte: Steuerung -->
+      <div class="card">
+        <label class="label">Bild wählen</label>
+        <input id="fileInput" type="file" accept="image/*" />
+
+        <div class="card" style="margin-top:12px">
+          <div class="row" style="justify-content:space-between;">
+            <span class="label" style="margin:0">Zoom</span>
+            <span class="hint" id="zoomLabel">1.00×</span>
+          </div>
+          <input id="zoom" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+          <p class="hint" style="margin-top:8px">Zum Verschieben in die Vorschau klicken/ziehen (auch Touch).</p>
+        </div>
+
+        <div class="row" style="margin-top:8px">
+          <button id="reset" class="btn" title="Zurücksetzen">Zurücksetzen</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="exportPng" class="btn">PNG exportieren</button>
+          <button id="exportPdf" class="btn">PDF exportieren</button>
+        </div>
+      </div>
+
+      <!-- Rechte Spalte: Vorschau -->
+      <div class="card">
+        <div style="font-size:13px; font-weight:600; margin-bottom:8px">Vorschau (Originalgröße 55×71 mm)</div>
+        <div id="preview" class="previewShell">
+          <canvas id="canvas"></canvas>
+          <label for="fileInput" id="dropHint" class="drop">Bild hierher ziehen oder klicken</label>
+        </div>
+        <p class="hint" style="margin-top:8px">Hinweis: Bildschirm‑Darstellung kann je nach Monitor von der physischen Größe abweichen. PDF ist jedoch millimetergenau.</p>
+      </div>
+    </div>
+
+    <p class="hint" style="margin-top:16px">Quelle: Single‑File ohne Build‑Schritt – ideal für GitHub Pages. Nur diese <code>index.html</code> hochladen.</p>
+  </div>
+
+  <script>
+    // --- Konstanten ---
+    const dpi = 300; // Export-Auflösung
+    const mmToInch = (mm) => mm / 25.4;
+    const frameMM = { w: 55, h: 71 }; // 55x71mm (hoch)
+    const framePX = {
+      w: Math.round(mmToInch(frameMM.w) * dpi),
+      h: Math.round(mmToInch(frameMM.h) * dpi)
+    };
+
+    // --- DOM ---
+    const fileInput = document.getElementById('fileInput');
+    const zoom = document.getElementById('zoom');
+    const zoomLabel = document.getElementById('zoomLabel');
+    const resetBtn = document.getElementById('reset');
+    const exportPngBtn = document.getElementById('exportPng');
+    const exportPdfBtn = document.getElementById('exportPdf');
+
+    const preview = document.getElementById('preview');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const dropHint = document.getElementById('dropHint');
+
+    // Canvas in Exportgröße betreiben (Qualität), CSS skaliert ihn auf mm
+    canvas.width = framePX.w;
+    canvas.height = framePX.h;
+
+    // Zustände
+    let img = null;
+    let imgSrc = null;
+    let naturalW = 0, naturalH = 0;
+    let coverScale = 1;
+    let scale = 1;
+    let offsetX = 0, offsetY = 0; // relativ zur Mitte in px (Canvas‑Koordinaten)
+
+    function draw() {
+      // Hintergrund weiß
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (img) {
+        const cx = canvas.width / 2 + offsetX;
+        const cy = canvas.height / 2 + offsetY;
+        const drawW = naturalW * scale;
+        const drawH = naturalH * scale;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+      }
+
+      // Rahmenlinie zur Orientierung
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#222';
+      ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+    }
+
+    function fitCover() {
+      if (!img) return;
+      coverScale = Math.max(framePX.w / naturalW, framePX.h / naturalH);
+      scale = coverScale;
+      zoom.value = String(scale);
+      zoomLabel.textContent = scale.toFixed(2) + '×';
+      offsetX = 0; offsetY = 0;
+      draw();
+    }
+
+    // Bild laden
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        imgSrc = ev.target.result;
+        img = new Image();
+        img.onload = () => {
+          naturalW = img.naturalWidth; naturalH = img.naturalHeight;
+          // Zoom-Regler dynamisch anpassen (0.5x .. 4x vom Cover-Fit)
+          coverScale = Math.max(framePX.w / naturalW, framePX.h / naturalH);
+          const minS = 0.5 * coverScale, maxS = 4 * coverScale;
+          zoom.min = String(minS);
+          zoom.max = String(maxS);
+          zoom.step = String((maxS - minS) / 200);
+          scale = coverScale; zoom.value = String(scale); zoomLabel.textContent = scale.toFixed(2) + '×';
+          offsetX = 0; offsetY = 0;
+          dropHint.style.display = 'none';
+          draw();
+        };
+        img.src = imgSrc;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Drag (Maus + Touch)
+    let dragging = false; let startX = 0, startY = 0, startOX = 0, startOY = 0;
+    function getLocalPoint(evt) {
+      const rect = preview.getBoundingClientRect();
+      const cX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
+      const cY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
+      return { x: cX - rect.left - rect.width/2, y: cY - rect.top - rect.height/2 };
+    }
+    function onDown(evt) {
+      if (!img) return; dragging = true; const p = getLocalPoint(evt); startX = p.x; startY = p.y; startOX = offsetX; startOY = offsetY; evt.preventDefault(); }
+    function onMove(evt) {
+      if (!dragging) return; const p = getLocalPoint(evt); offsetX = startOX + (p.x - startX); offsetY = startOY + (p.y - startY); draw(); }
+    function onUp() { dragging = false; }
+
+    preview.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    preview.addEventListener('touchstart', onDown, {passive:false});
+    window.addEventListener('touchmove', onMove, {passive:false});
+    window.addEventListener('touchend', onUp);
+
+    // Zoom
+    zoom.addEventListener('input', () => { scale = parseFloat(zoom.value); zoomLabel.textContent = scale.toFixed(2) + '×'; draw(); });
+
+    // Reset
+    resetBtn.addEventListener('click', fitCover);
+
+    // Export PNG
+    exportPngBtn.addEventListener('click', () => {
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a'); a.href = url; a.download = 'maske-55x71mm.png'; a.click();
+    });
+
+    // Export PDF
+    exportPdfBtn.addEventListener('click', () => {
+      try {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) throw new Error('jsPDF nicht geladen');
+        const pdf = new jsPDF({ unit:'mm', format:'a4' });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const w = frameMM.w, h = frameMM.h;
+        const x = (pageW - w) / 2; const y = (pageH - h) / 2;
+        // leichte Schnittmarken
+        pdf.setDrawColor(150); pdf.setLineWidth(0.2);
+        const m = 4;
+        pdf.line(x - m, y, x, y); pdf.line(x, y - m, x, y);
+        pdf.line(x + w, y - m, x + w, y); pdf.line(x + w, y, x + w + m, y);
+        pdf.line(x - m, y + h, x, y + h); pdf.line(x, y + h, x, y + h + m);
+        pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
+        pdf.addImage(imgData, 'JPEG', x, y, w, h);
+        pdf.save('maske-55x71mm.pdf');
+      } catch (e) {
+        alert('PDF-Export fehlgeschlagen: ' + e.message);
+        console.error(e);
+      }
+    });
+
+    // Drag&Drop Datei auf Vorschau
+    ;['dragenter','dragover'].forEach(ev => preview.addEventListener(ev, e => { e.preventDefault(); dropHint.textContent = 'Loslassen zum Laden…'; }));
+    ;['dragleave','dragend','drop'].forEach(ev => preview.addEventListener(ev, e => { e.preventDefault(); dropHint.textContent = 'Bild hierher ziehen oder klicken'; }));
+    preview.addEventListener('drop', e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0]; if (!file) return; fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); });
+
+    // Initialer Draw
+    draw();
+  </script>
+
+  <!--
+  ▸ Deployment auf GitHub Pages
+  1) Neues Repo (z.B. santa3d/bild-maske-55x71)
+  2) Diese Datei als index.html ins Repo legen, commit & push
+  3) In den Repository-Einstellungen → Pages → Branch: main (root) auswählen
+  4) Nach Bereitstellung unter https://<user>.github.io/<repo>/ erreichbar
+  -->
+</body>
+</html>
