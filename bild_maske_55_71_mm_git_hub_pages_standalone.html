@@ -25,7 +25,7 @@
     .hint { color: var(--muted); font-size: 12px; }
     .frameList { display: grid; gap: 16px; }
     .frameTitle { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-    .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; }
+    .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; touch-action: none; cursor: default; }
     canvas { position:absolute; inset:0; width:100%; height:100%; }
     .drop { position:absolute; inset:0; display:grid; place-content:center; color:#777; font-size: 13px; text-align:center; padding: 0 12px; }
     .controlBlock { margin-top: 12px; }
@@ -174,7 +174,8 @@
         startX: 0,
         startY: 0,
         startOX: 0,
-        startOY: 0
+        startOY: 0,
+        pointerId: null
       };
 
       const getLocalPoint = (evt) => {
@@ -188,32 +189,52 @@
         };
       };
 
-      const onDown = (evt) => {
+      const releasePointer = () => {
+        state.dragging = false;
+        state.pointerId = null;
+        updatePreviewCursor(state);
+      };
+
+      preview.addEventListener('pointerdown', (evt) => {
         if (!state.img) return;
+        if (typeof evt.button === 'number' && evt.button !== 0) return;
         state.dragging = true;
+        state.pointerId = evt.pointerId;
+        preview.setPointerCapture(evt.pointerId);
         const p = getLocalPoint(evt);
         state.startX = p.x;
         state.startY = p.y;
         state.startOX = state.offsetX;
         state.startOY = state.offsetY;
+        updatePreviewCursor(state);
         evt.preventDefault();
-      };
-      const onMove = (evt) => {
-        if (!state.dragging) return;
+      });
+
+      preview.addEventListener('pointermove', (evt) => {
+        if (!state.dragging || evt.pointerId !== state.pointerId) return;
         const p = getLocalPoint(evt);
         state.offsetX = state.startOX + (p.x - state.startX);
         state.offsetY = state.startOY + (p.y - state.startY);
-        evt.preventDefault();
+        clampOffsets(state);
         drawFrame(state);
-      };
-      const onUp = () => { state.dragging = false; };
+        evt.preventDefault();
+      });
 
-      preview.addEventListener('mousedown', onDown);
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-      preview.addEventListener('touchstart', onDown, { passive: false });
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('touchend', onUp);
+      preview.addEventListener('pointerup', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
+
+      preview.addEventListener('pointercancel', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
 
       zoom.addEventListener('input', () => {
         setScale(state, parseFloat(zoom.value));
@@ -233,6 +254,7 @@
         setScale(state, state.scale * factor);
         state.offsetX = pointerX - imageRelX * state.scale;
         state.offsetY = pointerY - imageRelY * state.scale;
+        clampOffsets(state);
         drawFrame(state);
       }, { passive: false });
 
@@ -277,6 +299,28 @@
       state.scale = Math.min(max, Math.max(min, nextScale));
       state.zoom.value = String(state.scale);
       state.zoomLabel.textContent = state.scale.toFixed(2) + '×';
+      clampOffsets(state);
+    }
+
+    function clampOffsets(state) {
+      if (!state.img) return;
+      const halfFrameW = state.px.w / 2;
+      const halfFrameH = state.px.h / 2;
+      const halfImageW = (state.naturalW * state.scale) / 2;
+      const halfImageH = (state.naturalH * state.scale) / 2;
+      const limitX = Math.max(0, halfImageW - halfFrameW);
+      const limitY = Math.max(0, halfImageH - halfFrameH);
+      state.offsetX = Math.min(limitX, Math.max(-limitX, state.offsetX));
+      state.offsetY = Math.min(limitY, Math.max(-limitY, state.offsetY));
+    }
+
+    function updatePreviewCursor(state) {
+      if (!state.preview) return;
+      if (!state.img) {
+        state.preview.style.cursor = 'default';
+      } else {
+        state.preview.style.cursor = state.dragging ? 'grabbing' : 'grab';
+      }
     }
 
     function drawFrame(state) {
@@ -294,6 +338,7 @@
       ctx.lineWidth = 4;
       ctx.strokeStyle = '#222';
       ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+      updatePreviewCursor(state);
     }
 
     function drawAll() {
@@ -393,7 +438,7 @@
         state.naturalW = image.naturalWidth;
         state.naturalH = image.naturalHeight;
         state.coverScale = Math.max(state.px.w / state.naturalW, state.px.h / state.naturalH);
-        const minS = 0.5 * state.coverScale;
+        const minS = state.coverScale;
         const maxS = 4 * state.coverScale;
         state.zoom.min = String(minS);
         state.zoom.max = String(maxS);
