@@ -46,6 +46,7 @@
         <label class="label">Bild wählen</label>
         <input id="fileInput" type="file" accept="image/*" />
         <p class="hint" style="margin-top:12px">Tipp: Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
+        <button id="exportAllPdf" class="btn" style="width:100%; margin-top:16px;" disabled>Alle 3 Masken als eine PDF exportieren</button>
       </div>
 
       <!-- Rechte Spalte: Vorschauen -->
@@ -66,7 +67,6 @@
           <div class="row buttonRow">
             <button class="btn" data-frame="55x71" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="55x71" data-action="png">PNG exportieren</button>
-            <button class="btn" data-frame="55x71" data-action="pdf">PDF exportieren</button>
           </div>
         </div>
 
@@ -86,7 +86,6 @@
           <div class="row buttonRow">
             <button class="btn" data-frame="71x33" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="71x33" data-action="png">PNG exportieren</button>
-            <button class="btn" data-frame="71x33" data-action="pdf">PDF exportieren</button>
           </div>
         </div>
 
@@ -106,7 +105,6 @@
           <div class="row buttonRow">
             <button class="btn" data-frame="33x71" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="33x71" data-action="png">PNG exportieren</button>
-            <button class="btn" data-frame="33x71" data-action="pdf">PDF exportieren</button>
           </div>
         </div>
       </div>
@@ -125,6 +123,7 @@
     ];
 
     const fileInput = document.getElementById('fileInput');
+    const exportAllPdfBtn = document.getElementById('exportAllPdf');
 
     const frameStates = frames.map(({ key, mm }) => {
       const preview = document.getElementById(`preview-${key}`);
@@ -135,7 +134,6 @@
       const dropHint = document.getElementById(`dropHint-${key}`);
       const resetBtn = document.querySelector(`button[data-frame="${key}"][data-action="reset"]`);
       const exportPngBtn = document.querySelector(`button[data-frame="${key}"][data-action="png"]`);
-      const exportPdfBtn = document.querySelector(`button[data-frame="${key}"][data-action="pdf"]`);
       const px = {
         w: Math.round(mmToInch(mm.w) * dpi),
         h: Math.round(mmToInch(mm.h) * dpi)
@@ -155,7 +153,6 @@
         dropHint,
         resetBtn,
         exportPngBtn,
-        exportPdfBtn,
         offsetX: 0,
         offsetY: 0,
         scale: 1,
@@ -228,7 +225,6 @@
 
       resetBtn.addEventListener('click', () => fitCover(state));
       exportPngBtn.addEventListener('click', () => exportPNG(state));
-      exportPdfBtn.addEventListener('click', () => exportPDF(state));
 
       ['dragenter', 'dragover'].forEach((ev) => preview.addEventListener(ev, (e) => {
         e.preventDefault();
@@ -307,27 +303,41 @@
       a.click();
     }
 
-    function exportPDF(state) {
+    function addCropMarks(pdf, x, y, w, h) {
+      const m = 4;
+      pdf.line(x - m, y, x, y); pdf.line(x, y - m, x, y);
+      pdf.line(x + w, y - m, x + w, y); pdf.line(x + w, y, x + w + m, y);
+      pdf.line(x - m, y + h, x, y + h); pdf.line(x, y + h, x, y + h + m);
+      pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
+    }
+
+    function exportAllPDF() {
       if (!ensureImageLoaded()) return;
       try {
         const { jsPDF } = window.jspdf || {};
         if (!jsPDF) throw new Error('jsPDF nicht geladen');
         const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-        const imgData = state.canvas.toDataURL('image/jpeg', 0.95);
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-        const { w, h } = state.mm;
-        const x = (pageW - w) / 2;
-        const y = (pageH - h) / 2;
-        pdf.setDrawColor(150);
-        pdf.setLineWidth(0.2);
-        const m = 4;
-        pdf.line(x - m, y, x, y); pdf.line(x, y - m, x, y);
-        pdf.line(x + w, y - m, x + w, y); pdf.line(x + w, y, x + w + m, y);
-        pdf.line(x - m, y + h, x, y + h); pdf.line(x, y + h, x, y + h + m);
-        pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
-        pdf.addImage(imgData, 'JPEG', x, y, w, h);
-        pdf.save(`maske-${state.mm.w}x${state.mm.h}mm.pdf`);
+        const spacing = 12;
+        let cursorY = 20;
+
+        frameStates.forEach((state, index) => {
+          const { w, h } = state.mm;
+          if (cursorY + h > pageH - 10 && index !== 0) {
+            pdf.addPage();
+            cursorY = 20;
+          }
+          const x = (pageW - w) / 2;
+          const imgData = state.canvas.toDataURL('image/jpeg', 0.95);
+          pdf.setDrawColor(150);
+          pdf.setLineWidth(0.2);
+          addCropMarks(pdf, x, cursorY, w, h);
+          pdf.addImage(imgData, 'JPEG', x, cursorY, w, h);
+          cursorY += h + spacing;
+        });
+
+        pdf.save('masken-alle.pdf');
       } catch (e) {
         alert('PDF-Export fehlgeschlagen: ' + e.message);
         console.error(e);
@@ -357,6 +367,7 @@
               state.dropHint.style.display = 'none';
             }
           });
+          exportAllPdfBtn.disabled = false;
           drawAll();
         };
         img.src = ev.target.result;
@@ -366,6 +377,7 @@
 
     frameStates.forEach((state) => setScale(state, parseFloat(state.zoom.value)));
     drawAll();
+    exportAllPdfBtn.addEventListener('click', exportAllPDF);
   </script>
 
   <!--
