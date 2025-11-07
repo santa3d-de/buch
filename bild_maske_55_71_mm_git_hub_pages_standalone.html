@@ -25,7 +25,7 @@
     .hint { color: var(--muted); font-size: 12px; }
     .frameList { display: grid; gap: 16px; }
     .frameTitle { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-    .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; }
+    .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; touch-action: none; cursor: default; }
     canvas { position:absolute; inset:0; width:100%; height:100%; }
     .drop { position:absolute; inset:0; display:grid; place-content:center; color:#777; font-size: 13px; text-align:center; padding: 0 12px; }
     .controlBlock { margin-top: 12px; }
@@ -43,9 +43,9 @@
     <div class="grid">
       <!-- Linke Spalte: Steuerung -->
       <div class="card">
-        <label class="label">Bild wählen</label>
+        <label class="label">Bild für alle Masken wählen</label>
         <input id="fileInput" type="file" accept="image/*" />
-        <p class="hint" style="margin-top:12px">Tipp: Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
+        <p class="hint" style="margin-top:12px">Tipp: Jede Maske kann ein eigenes Bild bekommen. Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
         <button id="exportAllPdf" class="btn" style="width:100%; margin-top:16px;" disabled>Alle 3 Masken als eine PDF exportieren</button>
       </div>
 
@@ -53,9 +53,10 @@
       <div class="frameList">
         <div class="card frameCard">
           <div class="frameTitle">Vorschau 55×71 mm (Hochformat)</div>
+          <input id="fileInput-55x71" class="frameFileInput" type="file" accept="image/*" hidden />
           <div id="preview-55x71" class="previewShell" style="width:55mm; height:71mm;">
             <canvas id="canvas-55x71"></canvas>
-            <label for="fileInput" id="dropHint-55x71" class="drop">Bild hierher ziehen oder klicken</label>
+            <label for="fileInput-55x71" id="dropHint-55x71" class="drop">Bild hierher ziehen oder klicken</label>
           </div>
           <div class="controlBlock">
             <div class="row" style="justify-content:space-between;">
@@ -65,6 +66,7 @@
             <input id="zoom-55x71" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
           </div>
           <div class="row buttonRow">
+            <button class="btn" data-frame="55x71" data-action="upload">Bild wählen</button>
             <button class="btn" data-frame="55x71" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="55x71" data-action="png">PNG exportieren</button>
           </div>
@@ -72,9 +74,10 @@
 
         <div class="card frameCard">
           <div class="frameTitle">Vorschau 71×33 mm (Querformat)</div>
+          <input id="fileInput-71x33" class="frameFileInput" type="file" accept="image/*" hidden />
           <div id="preview-71x33" class="previewShell" style="width:71mm; height:33mm;">
             <canvas id="canvas-71x33"></canvas>
-            <label for="fileInput" id="dropHint-71x33" class="drop">Bild hierher ziehen oder klicken</label>
+            <label for="fileInput-71x33" id="dropHint-71x33" class="drop">Bild hierher ziehen oder klicken</label>
           </div>
           <div class="controlBlock">
             <div class="row" style="justify-content:space-between;">
@@ -84,6 +87,7 @@
             <input id="zoom-71x33" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
           </div>
           <div class="row buttonRow">
+            <button class="btn" data-frame="71x33" data-action="upload">Bild wählen</button>
             <button class="btn" data-frame="71x33" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="71x33" data-action="png">PNG exportieren</button>
           </div>
@@ -91,9 +95,10 @@
 
         <div class="card frameCard">
           <div class="frameTitle">Vorschau 33×71 mm (Hochformat schmal)</div>
+          <input id="fileInput-33x71" class="frameFileInput" type="file" accept="image/*" hidden />
           <div id="preview-33x71" class="previewShell" style="width:33mm; height:71mm;">
             <canvas id="canvas-33x71"></canvas>
-            <label for="fileInput" id="dropHint-33x71" class="drop">Bild hierher ziehen oder klicken</label>
+            <label for="fileInput-33x71" id="dropHint-33x71" class="drop">Bild hierher ziehen oder klicken</label>
           </div>
           <div class="controlBlock">
             <div class="row" style="justify-content:space-between;">
@@ -103,6 +108,7 @@
             <input id="zoom-33x71" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
           </div>
           <div class="row buttonRow">
+            <button class="btn" data-frame="33x71" data-action="upload">Bild wählen</button>
             <button class="btn" data-frame="33x71" data-action="reset">Zurücksetzen</button>
             <button class="btn" data-frame="33x71" data-action="png">PNG exportieren</button>
           </div>
@@ -132,6 +138,8 @@
       const zoom = document.getElementById(`zoom-${key}`);
       const zoomLabel = document.getElementById(`zoomLabel-${key}`);
       const dropHint = document.getElementById(`dropHint-${key}`);
+      const frameFileInput = document.getElementById(`fileInput-${key}`);
+      const uploadBtn = document.querySelector(`button[data-frame="${key}"][data-action="upload"]`);
       const resetBtn = document.querySelector(`button[data-frame="${key}"][data-action="reset"]`);
       const exportPngBtn = document.querySelector(`button[data-frame="${key}"][data-action="png"]`);
       const px = {
@@ -151,8 +159,13 @@
         zoom,
         zoomLabel,
         dropHint,
+        fileInput: frameFileInput,
+        uploadBtn,
         resetBtn,
         exportPngBtn,
+        img: null,
+        naturalW: 0,
+        naturalH: 0,
         offsetX: 0,
         offsetY: 0,
         scale: 1,
@@ -161,7 +174,8 @@
         startX: 0,
         startY: 0,
         startOX: 0,
-        startOY: 0
+        startOY: 0,
+        pointerId: null
       };
 
       const getLocalPoint = (evt) => {
@@ -175,32 +189,52 @@
         };
       };
 
-      const onDown = (evt) => {
-        if (!img) return;
+      const releasePointer = () => {
+        state.dragging = false;
+        state.pointerId = null;
+        updatePreviewCursor(state);
+      };
+
+      preview.addEventListener('pointerdown', (evt) => {
+        if (!state.img) return;
+        if (typeof evt.button === 'number' && evt.button !== 0) return;
         state.dragging = true;
+        state.pointerId = evt.pointerId;
+        preview.setPointerCapture(evt.pointerId);
         const p = getLocalPoint(evt);
         state.startX = p.x;
         state.startY = p.y;
         state.startOX = state.offsetX;
         state.startOY = state.offsetY;
+        updatePreviewCursor(state);
         evt.preventDefault();
-      };
-      const onMove = (evt) => {
-        if (!state.dragging) return;
+      });
+
+      preview.addEventListener('pointermove', (evt) => {
+        if (!state.dragging || evt.pointerId !== state.pointerId) return;
         const p = getLocalPoint(evt);
         state.offsetX = state.startOX + (p.x - state.startX);
         state.offsetY = state.startOY + (p.y - state.startY);
-        evt.preventDefault();
+        clampOffsets(state);
         drawFrame(state);
-      };
-      const onUp = () => { state.dragging = false; };
+        evt.preventDefault();
+      });
 
-      preview.addEventListener('mousedown', onDown);
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-      preview.addEventListener('touchstart', onDown, { passive: false });
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('touchend', onUp);
+      preview.addEventListener('pointerup', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
+
+      preview.addEventListener('pointercancel', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
 
       zoom.addEventListener('input', () => {
         setScale(state, parseFloat(zoom.value));
@@ -208,7 +242,7 @@
       });
 
       preview.addEventListener('wheel', (evt) => {
-        if (!img) return;
+        if (!state.img) return;
         evt.preventDefault();
         const factor = evt.deltaY > 0 ? 0.9 : 1.1;
         const rect = preview.getBoundingClientRect();
@@ -220,33 +254,44 @@
         setScale(state, state.scale * factor);
         state.offsetX = pointerX - imageRelX * state.scale;
         state.offsetY = pointerY - imageRelY * state.scale;
+        clampOffsets(state);
         drawFrame(state);
       }, { passive: false });
 
       resetBtn.addEventListener('click', () => fitCover(state));
       exportPngBtn.addEventListener('click', () => exportPNG(state));
+      if (uploadBtn && frameFileInput) {
+        uploadBtn.addEventListener('click', () => frameFileInput.click());
+      }
+      if (frameFileInput) {
+        frameFileInput.addEventListener('change', (evt) => {
+          const file = evt.target.files && evt.target.files[0];
+          if (!file) return;
+          loadFileForState(state, file);
+          evt.target.value = '';
+        });
+      }
 
       ['dragenter', 'dragover'].forEach((ev) => preview.addEventListener(ev, (e) => {
         e.preventDefault();
+        if (!dropHint) return;
         dropHint.textContent = 'Loslassen zum Laden…';
+        dropHint.style.display = 'grid';
       }));
       ['dragleave', 'dragend', 'drop'].forEach((ev) => preview.addEventListener(ev, (e) => {
         e.preventDefault();
-        dropHint.textContent = 'Bild hierher ziehen oder klicken';
+        if (!dropHint) return;
+        dropHint.textContent = state.img ? 'Anderes Bild hierher ziehen oder klicken' : 'Bild hierher ziehen oder klicken';
+        updateDropHint(state);
       }));
       preview.addEventListener('drop', (e) => {
         const file = e.dataTransfer.files && e.dataTransfer.files[0];
         if (!file) return;
-        fileInput.files = e.dataTransfer.files;
-        fileInput.dispatchEvent(new Event('change'));
+        loadFileForState(state, file);
       });
 
       return state;
     });
-
-    let img = null;
-    let naturalW = 0;
-    let naturalH = 0;
 
     function setScale(state, nextScale) {
       const min = parseFloat(state.zoom.min);
@@ -254,23 +299,46 @@
       state.scale = Math.min(max, Math.max(min, nextScale));
       state.zoom.value = String(state.scale);
       state.zoomLabel.textContent = state.scale.toFixed(2) + '×';
+      clampOffsets(state);
+    }
+
+    function clampOffsets(state) {
+      if (!state.img) return;
+      const halfFrameW = state.px.w / 2;
+      const halfFrameH = state.px.h / 2;
+      const halfImageW = (state.naturalW * state.scale) / 2;
+      const halfImageH = (state.naturalH * state.scale) / 2;
+      const limitX = Math.max(0, halfImageW - halfFrameW);
+      const limitY = Math.max(0, halfImageH - halfFrameH);
+      state.offsetX = Math.min(limitX, Math.max(-limitX, state.offsetX));
+      state.offsetY = Math.min(limitY, Math.max(-limitY, state.offsetY));
+    }
+
+    function updatePreviewCursor(state) {
+      if (!state.preview) return;
+      if (!state.img) {
+        state.preview.style.cursor = 'default';
+      } else {
+        state.preview.style.cursor = state.dragging ? 'grabbing' : 'grab';
+      }
     }
 
     function drawFrame(state) {
       const { ctx, canvas } = state;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      if (img) {
+      if (state.img) {
         const cx = canvas.width / 2 + state.offsetX;
         const cy = canvas.height / 2 + state.offsetY;
-        const drawW = naturalW * state.scale;
-        const drawH = naturalH * state.scale;
+        const drawW = state.naturalW * state.scale;
+        const drawH = state.naturalH * state.scale;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+        ctx.drawImage(state.img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
       }
       ctx.lineWidth = 4;
       ctx.strokeStyle = '#222';
       ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+      updatePreviewCursor(state);
     }
 
     function drawAll() {
@@ -278,24 +346,24 @@
     }
 
     function fitCover(state) {
-      if (!img) return;
-      state.coverScale = Math.max(state.px.w / naturalW, state.px.h / naturalH);
+      if (!state.img) return;
+      state.coverScale = Math.max(state.px.w / state.naturalW, state.px.h / state.naturalH);
       setScale(state, state.coverScale);
       state.offsetX = 0;
       state.offsetY = 0;
       drawFrame(state);
     }
 
-    function ensureImageLoaded() {
-      if (!img) {
-        alert('Bitte zuerst ein Bild laden.');
+    function ensureImageLoaded(state) {
+      if (!state.img) {
+        alert('Bitte zuerst ein Bild für diese Maske laden.');
         return false;
       }
       return true;
     }
 
     function exportPNG(state) {
-      if (!ensureImageLoaded()) return;
+      if (!ensureImageLoaded(state)) return;
       const url = state.canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = url;
@@ -312,7 +380,11 @@
     }
 
     function exportAllPDF() {
-      if (!ensureImageLoaded()) return;
+      const loadedStates = frameStates.filter((state) => state.img);
+      if (!loadedStates.length) {
+        alert('Bitte zuerst mindestens ein Bild laden.');
+        return;
+      }
       try {
         const { jsPDF } = window.jspdf || {};
         if (!jsPDF) throw new Error('jsPDF nicht geladen');
@@ -322,7 +394,7 @@
         const spacing = 12;
         let cursorY = 20;
 
-        frameStates.forEach((state, index) => {
+        loadedStates.forEach((state, index) => {
           const { w, h } = state.mm;
           if (cursorY + h > pageH - 10 && index !== 0) {
             pdf.addPage();
@@ -344,39 +416,76 @@
       }
     }
 
+    function updateDropHint(state) {
+      if (!state.dropHint) return;
+      if (state.img) {
+        state.dropHint.textContent = 'Anderes Bild hierher ziehen oder klicken';
+        state.dropHint.style.display = 'none';
+      } else {
+        state.dropHint.textContent = 'Bild hierher ziehen oder klicken';
+        state.dropHint.style.display = 'grid';
+      }
+    }
+
+    function updateGlobalButtons() {
+      exportAllPdfBtn.disabled = !frameStates.some((state) => state.img);
+    }
+
+    function loadDataUrlIntoState(state, dataUrl) {
+      const image = new Image();
+      image.onload = () => {
+        state.img = image;
+        state.naturalW = image.naturalWidth;
+        state.naturalH = image.naturalHeight;
+        state.coverScale = Math.max(state.px.w / state.naturalW, state.px.h / state.naturalH);
+        const minS = state.coverScale;
+        const maxS = 4 * state.coverScale;
+        state.zoom.min = String(minS);
+        state.zoom.max = String(maxS);
+        state.zoom.step = String(Math.max((maxS - minS) / 200, 0.0005));
+        setScale(state, state.coverScale);
+        state.offsetX = 0;
+        state.offsetY = 0;
+        updateDropHint(state);
+        drawFrame(state);
+        updateGlobalButtons();
+      };
+      image.onerror = () => {
+        alert('Bild konnte nicht geladen werden.');
+      };
+      image.src = dataUrl;
+    }
+
+    function loadFileForState(state, file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        loadDataUrlIntoState(state, ev.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadFileForAll(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        frameStates.forEach((state) => loadDataUrlIntoState(state, dataUrl));
+      };
+      reader.readAsDataURL(file);
+    }
+
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        img = new Image();
-        img.onload = () => {
-          naturalW = img.naturalWidth;
-          naturalH = img.naturalHeight;
-          frameStates.forEach((state) => {
-            state.coverScale = Math.max(state.px.w / naturalW, state.px.h / naturalH);
-            const minS = 0.5 * state.coverScale;
-            const maxS = 4 * state.coverScale;
-            state.zoom.min = String(minS);
-            state.zoom.max = String(maxS);
-            state.zoom.step = String(Math.max((maxS - minS) / 200, 0.0005));
-            setScale(state, state.coverScale);
-            state.offsetX = 0;
-            state.offsetY = 0;
-            if (state.dropHint) {
-              state.dropHint.style.display = 'none';
-            }
-          });
-          exportAllPdfBtn.disabled = false;
-          drawAll();
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
+      loadFileForAll(file);
+      e.target.value = '';
     });
 
-    frameStates.forEach((state) => setScale(state, parseFloat(state.zoom.value)));
+    frameStates.forEach((state) => {
+      setScale(state, parseFloat(state.zoom.value));
+      updateDropHint(state);
+    });
     drawAll();
+    updateGlobalButtons();
     exportAllPdfBtn.addEventListener('click', exportAllPDF);
   </script>
 
