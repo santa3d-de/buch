@@ -11,6 +11,7 @@
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:var(--bg); color:var(--fg); }
     .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
     h1 { font-size: 22px; margin: 0 0 8px; }
+    .printNotice { margin: 0 0 16px; font-size: 14px; }
     p.lead { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
     .grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -38,6 +39,7 @@
 <body>
   <div class="wrap">
     <h1>Coverdesigner für das Hörbuch für dein Hörspielbox</h1>
+    <p class="printNotice"><strong>Bitte im Adobe Acrobat mit 100% ausdrucken!</strong></p>
     <p class="lead">Bild hochladen, im gewünschten Millimeter-Rahmen verschieben/zoomen und als <strong>PDF</strong> (millimetergenau) oder <strong>PNG</strong> exportieren. Jeder Rahmen merkt sich eigene Position und Zoom. Beim Drucken in 100 % / „Tatsächliche Größe“ ohne „An Seite anpassen“ drucken.</p>
 
     <div class="grid">
@@ -52,23 +54,23 @@
       <!-- Rechte Spalte: Vorschauen -->
       <div class="frameList">
         <div class="card frameCard">
-          <div class="frameTitle">Vorschau 55×76 mm (Hochformat)</div>
-          <input id="fileInput-55x76" class="frameFileInput" type="file" accept="image/*" hidden />
-          <div id="preview-55x76" class="previewShell" style="width:55mm; height:76mm;">
-            <canvas id="canvas-55x76"></canvas>
-            <label for="fileInput-55x76" id="dropHint-55x76" class="drop">Bild hierher ziehen oder klicken</label>
+          <div class="frameTitle">Vorschau 51×76 mm (Hochformat)</div>
+          <input id="fileInput-51x76" class="frameFileInput" type="file" accept="image/*" hidden />
+          <div id="preview-51x76" class="previewShell" style="width:51mm; height:76mm;">
+            <canvas id="canvas-51x76"></canvas>
+            <label for="fileInput-51x76" id="dropHint-51x76" class="drop">Bild hierher ziehen oder klicken</label>
           </div>
           <div class="controlBlock">
             <div class="row" style="justify-content:space-between;">
               <span class="label" style="margin:0">Zoom</span>
-              <span class="hint" id="zoomLabel-55x76">1.00×</span>
+              <span class="hint" id="zoomLabel-51x76">1.00×</span>
             </div>
-            <input id="zoom-55x76" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+            <input id="zoom-51x76" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
           </div>
           <div class="row buttonRow">
-            <button class="btn" data-frame="55x76" data-action="upload">Bild wählen</button>
-            <button class="btn" data-frame="55x76" data-action="reset">Zurücksetzen</button>
-            <button class="btn" data-frame="55x76" data-action="png">PNG exportieren</button>
+            <button class="btn" data-frame="51x76" data-action="upload">Bild wählen</button>
+            <button class="btn" data-frame="51x76" data-action="reset">Zurücksetzen</button>
+            <button class="btn" data-frame="51x76" data-action="png">PNG exportieren</button>
           </div>
         </div>
 
@@ -123,7 +125,7 @@
     const dpi = 300;
     const mmToInch = (mm) => mm / 25.4;
     const frames = [
-      { key: '55x76', mm: { w: 55, h: 76 } },
+      { key: '51x76', mm: { w: 51, h: 76 } },
       { key: '71x33', mm: { w: 71, h: 33 } },
       { key: '33x71', mm: { w: 33, h: 71 } }
     ];
@@ -384,6 +386,19 @@
       pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
     }
 
+    const pdfHeaderText = 'Bitte im Adobe Acrobat mit 100% ausdrucken!';
+
+    function drawPdfHeader(pdf) {
+      const pageW = pdf.internal.pageSize.getWidth();
+      const headerY = 12;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text(pdfHeaderText, pageW / 2, headerY, { align: 'center' });
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
+      return headerY + 8;
+    }
+
     function exportAllPDF() {
       const loadedStates = frameStates.filter((state) => state.img);
       if (!loadedStates.length) {
@@ -397,13 +412,13 @@
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
         const spacing = 12;
-        let cursorY = 20;
+        let cursorY = drawPdfHeader(pdf);
 
         loadedStates.forEach((state, index) => {
           const { w, h } = state.mm;
           if (cursorY + h > pageH - 10 && index !== 0) {
             pdf.addPage();
-            cursorY = 20;
+            cursorY = drawPdfHeader(pdf);
           }
           const x = (pageW - w) / 2;
           const imgData = state.canvas.toDataURL('image/jpeg', 0.95);
