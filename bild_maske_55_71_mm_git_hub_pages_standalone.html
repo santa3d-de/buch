@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bild‑Maske 55×71 mm – Export PNG/PDF</title>
-  <meta name="description" content="Bild in 55×71 mm-Rahmen laden, verschieben/zoomen und als PNG oder PDF exportieren. Perfekt für GitHub Pages (keine Build-Tools).">
+  <title>Bild‑Masken 55×71 mm, 71×33 mm & 33×71 mm – Export PNG/PDF</title>
+  <meta name="description" content="Bild in mehreren mm-Rahmen laden, verschieben/zoomen und als PNG oder PDF exportieren. Perfekt für GitHub Pages (keine Build-Tools)." />
   <style>
     :root { --bg:#f7f7f8; --fg:#111; --muted:#666; --card:#fff; --border:#dcdcdc; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:var(--bg); color:var(--fg); }
-    .wrap { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+    .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
     h1 { font-size: 22px; margin: 0 0 8px; }
     p.lead { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
-    .grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
-    @media (max-width: 840px) { .grid { grid-template-columns: 1fr; } }
+    .grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
     .label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; }
     input[type="file"] { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: #fff; }
@@ -23,53 +23,102 @@
     .btn:hover { background: #f2f2f2; }
     .btn:active { transform: translateY(1px); }
     .hint { color: var(--muted); font-size: 12px; }
-
-    /* Vorschau mit physischer Größe in mm (nur Anzeige) */
-    .previewShell { width: 55mm; height: 71mm; border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; }
+    .counterBox { margin-top:16px; padding:12px; border-radius:12px; border:1px solid rgba(64,99,187,.35); background:rgba(64,99,187,.08); font-size:13px; line-height:1.5; color:#23325f; }
+    .counterBox strong { display:block; font-size:14px; margin-bottom:4px; }
+    .frameList { display: grid; gap: 16px; }
+    .frameTitle { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; touch-action: none; cursor: default; }
     canvas { position:absolute; inset:0; width:100%; height:100%; }
-    .drop { position:absolute; inset:0; display:grid; place-content:center; color:#777; font-size: 13px; }
+    .drop { position:absolute; inset:0; display:grid; place-content:center; color:#777; font-size: 13px; text-align:center; padding: 0 12px; }
+    .controlBlock { margin-top: 12px; }
+    .buttonRow { flex-wrap: wrap; justify-content: flex-start; margin-top: 12px; }
+    .buttonRow .btn { flex: 1 1 140px; }
   </style>
   <!-- jsPDF für PDF-Export (CDN) -->
   <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="wrap">
-    <h1>Bild‑Maske 55×71 mm</h1>
-    <p class="lead">Bild hochladen, im **55×71 mm**‑Rahmen verschieben/zoomen und als <strong>PDF</strong> (millimetergenau) oder <strong>PNG</strong> exportieren.
-      Beim Drucken in 100 % / „Tatsächliche Größe“ ohne „An Seite anpassen“ drucken.</p>
+    <h1>Bild‑Masken 55×71 mm, 71×33 mm & 33×71 mm</h1>
+    <p class="lead">Bild hochladen, im gewünschten Millimeter-Rahmen verschieben/zoomen und als <strong>PDF</strong> (millimetergenau) oder <strong>PNG</strong> exportieren. Jeder Rahmen merkt sich eigene Position und Zoom. Beim Drucken in 100 % / „Tatsächliche Größe“ ohne „An Seite anpassen“ drucken.</p>
 
     <div class="grid">
       <!-- Linke Spalte: Steuerung -->
       <div class="card">
-        <label class="label">Bild wählen</label>
+        <label class="label">Bild für alle Masken wählen</label>
         <input id="fileInput" type="file" accept="image/*" />
-
-        <div class="card" style="margin-top:12px">
-          <div class="row" style="justify-content:space-between;">
-            <span class="label" style="margin:0">Zoom</span>
-            <span class="hint" id="zoomLabel">1.00×</span>
-          </div>
-          <input id="zoom" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
-          <p class="hint" style="margin-top:8px">Zum Verschieben in die Vorschau klicken/ziehen (auch Touch).</p>
-        </div>
-
-        <div class="row" style="margin-top:8px">
-          <button id="reset" class="btn" title="Zurücksetzen">Zurücksetzen</button>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button id="exportPng" class="btn">PNG exportieren</button>
-          <button id="exportPdf" class="btn">PDF exportieren</button>
+        <p class="hint" style="margin-top:12px">Tipp: Jede Maske kann ein eigenes Bild bekommen. Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
+        <button id="exportAllPdf" class="btn" style="width:100%; margin-top:16px;" disabled>Alle 3 Masken als eine PDF exportieren</button>
+        <div id="visitCounter" class="counterBox" role="status" aria-live="polite">
+          <strong>DSGVO-konformer Besuchszähler</strong>
+          <span class="counterText">Wird geladen …</span>
         </div>
       </div>
 
-      <!-- Rechte Spalte: Vorschau -->
-      <div class="card">
-        <div style="font-size:13px; font-weight:600; margin-bottom:8px">Vorschau (Originalgröße 55×71 mm)</div>
-        <div id="preview" class="previewShell">
-          <canvas id="canvas"></canvas>
-          <label for="fileInput" id="dropHint" class="drop">Bild hierher ziehen oder klicken</label>
+      <!-- Rechte Spalte: Vorschauen -->
+      <div class="frameList">
+        <div class="card frameCard">
+          <div class="frameTitle">Vorschau 55×71 mm (Hochformat)</div>
+          <input id="fileInput-55x71" class="frameFileInput" type="file" accept="image/*" hidden />
+          <div id="preview-55x71" class="previewShell" style="width:55mm; height:71mm;">
+            <canvas id="canvas-55x71"></canvas>
+            <label for="fileInput-55x71" id="dropHint-55x71" class="drop">Bild hierher ziehen oder klicken</label>
+          </div>
+          <div class="controlBlock">
+            <div class="row" style="justify-content:space-between;">
+              <span class="label" style="margin:0">Zoom</span>
+              <span class="hint" id="zoomLabel-55x71">1.00×</span>
+            </div>
+            <input id="zoom-55x71" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+          </div>
+          <div class="row buttonRow">
+            <button class="btn" data-frame="55x71" data-action="upload">Bild wählen</button>
+            <button class="btn" data-frame="55x71" data-action="reset">Zurücksetzen</button>
+            <button class="btn" data-frame="55x71" data-action="png">PNG exportieren</button>
+          </div>
         </div>
-        <p class="hint" style="margin-top:8px">Hinweis: Bildschirm‑Darstellung kann je nach Monitor von der physischen Größe abweichen. PDF ist jedoch millimetergenau.</p>
+
+        <div class="card frameCard">
+          <div class="frameTitle">Vorschau 71×33 mm (Querformat)</div>
+          <input id="fileInput-71x33" class="frameFileInput" type="file" accept="image/*" hidden />
+          <div id="preview-71x33" class="previewShell" style="width:71mm; height:33mm;">
+            <canvas id="canvas-71x33"></canvas>
+            <label for="fileInput-71x33" id="dropHint-71x33" class="drop">Bild hierher ziehen oder klicken</label>
+          </div>
+          <div class="controlBlock">
+            <div class="row" style="justify-content:space-between;">
+              <span class="label" style="margin:0">Zoom</span>
+              <span class="hint" id="zoomLabel-71x33">1.00×</span>
+            </div>
+            <input id="zoom-71x33" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+          </div>
+          <div class="row buttonRow">
+            <button class="btn" data-frame="71x33" data-action="upload">Bild wählen</button>
+            <button class="btn" data-frame="71x33" data-action="reset">Zurücksetzen</button>
+            <button class="btn" data-frame="71x33" data-action="png">PNG exportieren</button>
+          </div>
+        </div>
+
+        <div class="card frameCard">
+          <div class="frameTitle">Vorschau 33×71 mm (Hochformat schmal)</div>
+          <input id="fileInput-33x71" class="frameFileInput" type="file" accept="image/*" hidden />
+          <div id="preview-33x71" class="previewShell" style="width:33mm; height:71mm;">
+            <canvas id="canvas-33x71"></canvas>
+            <label for="fileInput-33x71" id="dropHint-33x71" class="drop">Bild hierher ziehen oder klicken</label>
+          </div>
+          <div class="controlBlock">
+            <div class="row" style="justify-content:space-between;">
+              <span class="label" style="margin:0">Zoom</span>
+              <span class="hint" id="zoomLabel-33x71">1.00×</span>
+            </div>
+            <input id="zoom-33x71" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+          </div>
+          <div class="row buttonRow">
+            <button class="btn" data-frame="33x71" data-action="upload">Bild wählen</button>
+            <button class="btn" data-frame="33x71" data-action="reset">Zurücksetzen</button>
+            <button class="btn" data-frame="33x71" data-action="png">PNG exportieren</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -77,163 +126,394 @@
   </div>
 
   <script>
-    // --- Konstanten ---
-    const dpi = 300; // Export-Auflösung
+    const visitCounterEl = document.getElementById('visitCounter');
+    const visitCounterText = visitCounterEl?.querySelector('.counterText');
+
+    if (visitCounterEl && visitCounterText) {
+      const key = 'maskenVisitCount';
+      try {
+        const storage = window.localStorage;
+        const previous = Number.parseInt(storage.getItem(key) || '0', 10) || 0;
+        const current = previous + 1;
+        storage.setItem(key, String(current));
+        visitCounterText.textContent = `Deine Besuche: ${current.toLocaleString('de-DE')} (bleibt nur in diesem Browser, keine Datenübertragung).`;
+      } catch (error) {
+        visitCounterText.textContent = 'Nicht verfügbar: Lokaler Speicher wurde blockiert.';
+      }
+    }
+
+    const dpi = 300;
     const mmToInch = (mm) => mm / 25.4;
-    const frameMM = { w: 55, h: 71 }; // 55x71mm (hoch)
-    const framePX = {
-      w: Math.round(mmToInch(frameMM.w) * dpi),
-      h: Math.round(mmToInch(frameMM.h) * dpi)
-    };
+    const frames = [
+      { key: '55x71', mm: { w: 55, h: 71 } },
+      { key: '71x33', mm: { w: 71, h: 33 } },
+      { key: '33x71', mm: { w: 33, h: 71 } }
+    ];
 
-    // --- DOM ---
     const fileInput = document.getElementById('fileInput');
-    const zoom = document.getElementById('zoom');
-    const zoomLabel = document.getElementById('zoomLabel');
-    const resetBtn = document.getElementById('reset');
-    const exportPngBtn = document.getElementById('exportPng');
-    const exportPdfBtn = document.getElementById('exportPdf');
+    const exportAllPdfBtn = document.getElementById('exportAllPdf');
 
-    const preview = document.getElementById('preview');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const dropHint = document.getElementById('dropHint');
+    const frameStates = frames.map(({ key, mm }) => {
+      const preview = document.getElementById(`preview-${key}`);
+      const canvas = document.getElementById(`canvas-${key}`);
+      const ctx = canvas.getContext('2d');
+      const zoom = document.getElementById(`zoom-${key}`);
+      const zoomLabel = document.getElementById(`zoomLabel-${key}`);
+      const dropHint = document.getElementById(`dropHint-${key}`);
+      const frameFileInput = document.getElementById(`fileInput-${key}`);
+      const uploadBtn = document.querySelector(`button[data-frame="${key}"][data-action="upload"]`);
+      const resetBtn = document.querySelector(`button[data-frame="${key}"][data-action="reset"]`);
+      const exportPngBtn = document.querySelector(`button[data-frame="${key}"][data-action="png"]`);
+      const px = {
+        w: Math.round(mmToInch(mm.w) * dpi),
+        h: Math.round(mmToInch(mm.h) * dpi)
+      };
+      canvas.width = px.w;
+      canvas.height = px.h;
 
-    // Canvas in Exportgröße betreiben (Qualität), CSS skaliert ihn auf mm
-    canvas.width = framePX.w;
-    canvas.height = framePX.h;
+      const state = {
+        key,
+        mm,
+        px,
+        preview,
+        canvas,
+        ctx,
+        zoom,
+        zoomLabel,
+        dropHint,
+        fileInput: frameFileInput,
+        uploadBtn,
+        resetBtn,
+        exportPngBtn,
+        img: null,
+        naturalW: 0,
+        naturalH: 0,
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        coverScale: 1,
+        dragging: false,
+        startX: 0,
+        startY: 0,
+        startOX: 0,
+        startOY: 0,
+        pointerId: null
+      };
 
-    // Zustände
-    let img = null;
-    let imgSrc = null;
-    let naturalW = 0, naturalH = 0;
-    let coverScale = 1;
-    let scale = 1;
-    let offsetX = 0, offsetY = 0; // relativ zur Mitte in px (Canvas‑Koordinaten)
+      const getLocalPoint = (evt) => {
+        const rect = preview.getBoundingClientRect();
+        const point = evt.touches ? evt.touches[0] : evt;
+        const ratioX = canvas.width / rect.width;
+        const ratioY = canvas.height / rect.height;
+        return {
+          x: (point.clientX - rect.left - rect.width / 2) * ratioX,
+          y: (point.clientY - rect.top - rect.height / 2) * ratioY
+        };
+      };
 
-    function draw() {
-      // Hintergrund weiß
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const releasePointer = () => {
+        state.dragging = false;
+        state.pointerId = null;
+        updatePreviewCursor(state);
+      };
 
-      if (img) {
-        const cx = canvas.width / 2 + offsetX;
-        const cy = canvas.height / 2 + offsetY;
-        const drawW = naturalW * scale;
-        const drawH = naturalH * scale;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+      preview.addEventListener('pointerdown', (evt) => {
+        if (!state.img) return;
+        if (typeof evt.button === 'number' && evt.button !== 0) return;
+        state.dragging = true;
+        state.pointerId = evt.pointerId;
+        preview.setPointerCapture(evt.pointerId);
+        const p = getLocalPoint(evt);
+        state.startX = p.x;
+        state.startY = p.y;
+        state.startOX = state.offsetX;
+        state.startOY = state.offsetY;
+        updatePreviewCursor(state);
+        evt.preventDefault();
+      });
+
+      preview.addEventListener('pointermove', (evt) => {
+        if (!state.dragging || evt.pointerId !== state.pointerId) return;
+        const p = getLocalPoint(evt);
+        state.offsetX = state.startOX + (p.x - state.startX);
+        state.offsetY = state.startOY + (p.y - state.startY);
+        clampOffsets(state);
+        drawFrame(state);
+        evt.preventDefault();
+      });
+
+      preview.addEventListener('pointerup', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
+
+      preview.addEventListener('pointercancel', (evt) => {
+        if (evt.pointerId !== state.pointerId) return;
+        if (preview.hasPointerCapture(evt.pointerId)) {
+          preview.releasePointerCapture(evt.pointerId);
+        }
+        releasePointer();
+      });
+
+      preview.addEventListener('lostpointercapture', () => {
+        if (!state.dragging) return;
+        releasePointer();
+      });
+
+      zoom.addEventListener('input', () => {
+        setScale(state, parseFloat(zoom.value));
+        drawFrame(state);
+      });
+
+      preview.addEventListener('wheel', (evt) => {
+        if (!state.img) return;
+        evt.preventDefault();
+        const factor = evt.deltaY > 0 ? 0.9 : 1.1;
+        const rect = preview.getBoundingClientRect();
+        const pointerX = (evt.clientX - rect.left - rect.width / 2) * (canvas.width / rect.width);
+        const pointerY = (evt.clientY - rect.top - rect.height / 2) * (canvas.height / rect.height);
+        const prevScale = state.scale;
+        const imageRelX = (pointerX - state.offsetX) / prevScale;
+        const imageRelY = (pointerY - state.offsetY) / prevScale;
+        setScale(state, state.scale * factor);
+        state.offsetX = pointerX - imageRelX * state.scale;
+        state.offsetY = pointerY - imageRelY * state.scale;
+        clampOffsets(state);
+        drawFrame(state);
+      }, { passive: false });
+
+      resetBtn.addEventListener('click', () => fitCover(state));
+      exportPngBtn.addEventListener('click', () => exportPNG(state));
+      if (uploadBtn && frameFileInput) {
+        uploadBtn.addEventListener('click', () => frameFileInput.click());
+      }
+      if (frameFileInput) {
+        frameFileInput.addEventListener('change', (evt) => {
+          const file = evt.target.files && evt.target.files[0];
+          if (!file) return;
+          loadFileForState(state, file);
+          evt.target.value = '';
+        });
       }
 
-      // Rahmenlinie zur Orientierung
+      ['dragenter', 'dragover'].forEach((ev) => preview.addEventListener(ev, (e) => {
+        e.preventDefault();
+        if (!dropHint) return;
+        dropHint.textContent = 'Loslassen zum Laden…';
+        dropHint.style.display = 'grid';
+      }));
+      ['dragleave', 'dragend', 'drop'].forEach((ev) => preview.addEventListener(ev, (e) => {
+        e.preventDefault();
+        if (!dropHint) return;
+        dropHint.textContent = state.img ? 'Anderes Bild hierher ziehen oder klicken' : 'Bild hierher ziehen oder klicken';
+        updateDropHint(state);
+      }));
+      preview.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        loadFileForState(state, file);
+      });
+
+      return state;
+    });
+
+    function setScale(state, nextScale) {
+      const min = parseFloat(state.zoom.min);
+      const max = parseFloat(state.zoom.max);
+      state.scale = Math.min(max, Math.max(min, nextScale));
+      state.zoom.value = String(state.scale);
+      state.zoomLabel.textContent = state.scale.toFixed(2) + '×';
+      clampOffsets(state);
+    }
+
+    function clampOffsets(state) {
+      if (!state.img) return;
+      const halfFrameW = state.px.w / 2;
+      const halfFrameH = state.px.h / 2;
+      const halfImageW = (state.naturalW * state.scale) / 2;
+      const halfImageH = (state.naturalH * state.scale) / 2;
+      const limitX = Math.max(0, halfImageW - halfFrameW);
+      const limitY = Math.max(0, halfImageH - halfFrameH);
+      state.offsetX = Math.min(limitX, Math.max(-limitX, state.offsetX));
+      state.offsetY = Math.min(limitY, Math.max(-limitY, state.offsetY));
+    }
+
+    function updatePreviewCursor(state) {
+      if (!state.preview) return;
+      if (!state.img) {
+        state.preview.style.cursor = 'default';
+      } else {
+        state.preview.style.cursor = state.dragging ? 'grabbing' : 'grab';
+      }
+    }
+
+    function drawFrame(state) {
+      const { ctx, canvas } = state;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (state.img) {
+        const cx = canvas.width / 2 + state.offsetX;
+        const cy = canvas.height / 2 + state.offsetY;
+        const drawW = state.naturalW * state.scale;
+        const drawH = state.naturalH * state.scale;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(state.img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+      }
       ctx.lineWidth = 4;
       ctx.strokeStyle = '#222';
       ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+      updatePreviewCursor(state);
     }
 
-    function fitCover() {
-      if (!img) return;
-      coverScale = Math.max(framePX.w / naturalW, framePX.h / naturalH);
-      scale = coverScale;
-      zoom.value = String(scale);
-      zoomLabel.textContent = scale.toFixed(2) + '×';
-      offsetX = 0; offsetY = 0;
-      draw();
+    function drawAll() {
+      frameStates.forEach(drawFrame);
     }
 
-    // Bild laden
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        imgSrc = ev.target.result;
-        img = new Image();
-        img.onload = () => {
-          naturalW = img.naturalWidth; naturalH = img.naturalHeight;
-          // Zoom-Regler dynamisch anpassen (0.5x .. 4x vom Cover-Fit)
-          coverScale = Math.max(framePX.w / naturalW, framePX.h / naturalH);
-          const minS = 0.5 * coverScale, maxS = 4 * coverScale;
-          zoom.min = String(minS);
-          zoom.max = String(maxS);
-          zoom.step = String((maxS - minS) / 200);
-          scale = coverScale; zoom.value = String(scale); zoomLabel.textContent = scale.toFixed(2) + '×';
-          offsetX = 0; offsetY = 0;
-          dropHint.style.display = 'none';
-          draw();
-        };
-        img.src = imgSrc;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Drag (Maus + Touch)
-    let dragging = false; let startX = 0, startY = 0, startOX = 0, startOY = 0;
-    function getLocalPoint(evt) {
-      const rect = preview.getBoundingClientRect();
-      const cX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
-      const cY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
-      return { x: cX - rect.left - rect.width/2, y: cY - rect.top - rect.height/2 };
+    function fitCover(state) {
+      if (!state.img) return;
+      state.coverScale = Math.max(state.px.w / state.naturalW, state.px.h / state.naturalH);
+      setScale(state, state.coverScale);
+      state.offsetX = 0;
+      state.offsetY = 0;
+      drawFrame(state);
     }
-    function onDown(evt) {
-      if (!img) return; dragging = true; const p = getLocalPoint(evt); startX = p.x; startY = p.y; startOX = offsetX; startOY = offsetY; evt.preventDefault(); }
-    function onMove(evt) {
-      if (!dragging) return; const p = getLocalPoint(evt); offsetX = startOX + (p.x - startX); offsetY = startOY + (p.y - startY); draw(); }
-    function onUp() { dragging = false; }
 
-    preview.addEventListener('mousedown', onDown);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    preview.addEventListener('touchstart', onDown, {passive:false});
-    window.addEventListener('touchmove', onMove, {passive:false});
-    window.addEventListener('touchend', onUp);
+    function ensureImageLoaded(state) {
+      if (!state.img) {
+        alert('Bitte zuerst ein Bild für diese Maske laden.');
+        return false;
+      }
+      return true;
+    }
 
-    // Zoom
-    zoom.addEventListener('input', () => { scale = parseFloat(zoom.value); zoomLabel.textContent = scale.toFixed(2) + '×'; draw(); });
+    function exportPNG(state) {
+      if (!ensureImageLoaded(state)) return;
+      const url = state.canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `maske-${state.mm.w}x${state.mm.h}mm.png`;
+      a.click();
+    }
 
-    // Reset
-    resetBtn.addEventListener('click', fitCover);
+    function addCropMarks(pdf, x, y, w, h) {
+      const m = 4;
+      pdf.line(x - m, y, x, y); pdf.line(x, y - m, x, y);
+      pdf.line(x + w, y - m, x + w, y); pdf.line(x + w, y, x + w + m, y);
+      pdf.line(x - m, y + h, x, y + h); pdf.line(x, y + h, x, y + h + m);
+      pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
+    }
 
-    // Export PNG
-    exportPngBtn.addEventListener('click', () => {
-      const url = canvas.toDataURL('image/png');
-      const a = document.createElement('a'); a.href = url; a.download = 'maske-55x71mm.png'; a.click();
-    });
-
-    // Export PDF
-    exportPdfBtn.addEventListener('click', () => {
+    function exportAllPDF() {
+      const loadedStates = frameStates.filter((state) => state.img);
+      if (!loadedStates.length) {
+        alert('Bitte zuerst mindestens ein Bild laden.');
+        return;
+      }
       try {
         const { jsPDF } = window.jspdf || {};
         if (!jsPDF) throw new Error('jsPDF nicht geladen');
-        const pdf = new jsPDF({ unit:'mm', format:'a4' });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-        const w = frameMM.w, h = frameMM.h;
-        const x = (pageW - w) / 2; const y = (pageH - h) / 2;
-        // leichte Schnittmarken
-        pdf.setDrawColor(150); pdf.setLineWidth(0.2);
-        const m = 4;
-        pdf.line(x - m, y, x, y); pdf.line(x, y - m, x, y);
-        pdf.line(x + w, y - m, x + w, y); pdf.line(x + w, y, x + w + m, y);
-        pdf.line(x - m, y + h, x, y + h); pdf.line(x, y + h, x, y + h + m);
-        pdf.line(x + w, y + h, x + w + m, y + h); pdf.line(x + w, y + h, x + w, y + h + m);
-        pdf.addImage(imgData, 'JPEG', x, y, w, h);
-        pdf.save('maske-55x71mm.pdf');
+        const spacing = 12;
+        let cursorY = 20;
+
+        loadedStates.forEach((state, index) => {
+          const { w, h } = state.mm;
+          if (cursorY + h > pageH - 10 && index !== 0) {
+            pdf.addPage();
+            cursorY = 20;
+          }
+          const x = (pageW - w) / 2;
+          const imgData = state.canvas.toDataURL('image/jpeg', 0.95);
+          pdf.setDrawColor(150);
+          pdf.setLineWidth(0.2);
+          addCropMarks(pdf, x, cursorY, w, h);
+          pdf.addImage(imgData, 'JPEG', x, cursorY, w, h);
+          cursorY += h + spacing;
+        });
+
+        pdf.save('masken-alle.pdf');
       } catch (e) {
         alert('PDF-Export fehlgeschlagen: ' + e.message);
         console.error(e);
       }
+    }
+
+    function updateDropHint(state) {
+      if (!state.dropHint) return;
+      if (state.img) {
+        state.dropHint.textContent = 'Anderes Bild hierher ziehen oder klicken';
+        state.dropHint.style.display = 'none';
+      } else {
+        state.dropHint.textContent = 'Bild hierher ziehen oder klicken';
+        state.dropHint.style.display = 'grid';
+      }
+    }
+
+    function updateGlobalButtons() {
+      exportAllPdfBtn.disabled = !frameStates.some((state) => state.img);
+    }
+
+    function loadDataUrlIntoState(state, dataUrl) {
+      const image = new Image();
+      image.onload = () => {
+        state.img = image;
+        state.naturalW = image.naturalWidth;
+        state.naturalH = image.naturalHeight;
+        state.coverScale = Math.max(state.px.w / state.naturalW, state.px.h / state.naturalH);
+        const minS = state.coverScale;
+        const maxS = 4 * state.coverScale;
+        state.zoom.min = String(minS);
+        state.zoom.max = String(maxS);
+        state.zoom.step = String(Math.max((maxS - minS) / 200, 0.0005));
+        setScale(state, state.coverScale);
+        state.offsetX = 0;
+        state.offsetY = 0;
+        updateDropHint(state);
+        drawFrame(state);
+        updateGlobalButtons();
+      };
+      image.onerror = () => {
+        alert('Bild konnte nicht geladen werden.');
+      };
+      image.src = dataUrl;
+    }
+
+    function loadFileForState(state, file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        loadDataUrlIntoState(state, ev.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadFileForAll(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        frameStates.forEach((state) => loadDataUrlIntoState(state, dataUrl));
+      };
+      reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      loadFileForAll(file);
+      e.target.value = '';
     });
 
-    // Drag&Drop Datei auf Vorschau
-    ;['dragenter','dragover'].forEach(ev => preview.addEventListener(ev, e => { e.preventDefault(); dropHint.textContent = 'Loslassen zum Laden…'; }));
-    ;['dragleave','dragend','drop'].forEach(ev => preview.addEventListener(ev, e => { e.preventDefault(); dropHint.textContent = 'Bild hierher ziehen oder klicken'; }));
-    preview.addEventListener('drop', e => {
-      const file = e.dataTransfer.files && e.dataTransfer.files[0]; if (!file) return; fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); });
-
-    // Initialer Draw
-    draw();
+    frameStates.forEach((state) => {
+      setScale(state, parseFloat(state.zoom.value));
+      updateDropHint(state);
+    });
+    drawAll();
+    updateGlobalButtons();
+    exportAllPdfBtn.addEventListener('click', exportAllPDF);
   </script>
 
   <!--
