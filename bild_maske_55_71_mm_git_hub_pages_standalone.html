@@ -47,6 +47,7 @@
         <input id="fileInput" type="file" accept="image/*" />
         <p class="hint" style="margin-top:12px">Tipp: Jede Maske kann ein eigenes Bild bekommen. Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
         <button id="exportAllPdf" class="btn" style="width:100%; margin-top:16px;" disabled>Alle 3 Masken als eine PDF exportieren</button>
+        <p id="visitCounter" class="hint" style="margin-top:16px; font-size:13px; line-height:1.4;"></p>
       </div>
 
       <!-- Rechte Spalte: Vorschauen -->
@@ -120,6 +121,21 @@
   </div>
 
   <script>
+    const visitCounterEl = document.getElementById('visitCounter');
+
+    if (visitCounterEl) {
+      const key = 'maskenVisitCount';
+      try {
+        const storage = window.localStorage;
+        const previous = Number.parseInt(storage.getItem(key) || '0', 10) || 0;
+        const current = previous + 1;
+        storage.setItem(key, String(current));
+        visitCounterEl.textContent = `Lokaler Besuchszähler: ${current.toLocaleString('de-DE')} (bleibt nur in diesem Browser, keine Datenübertragung).`;
+      } catch (error) {
+        visitCounterEl.textContent = 'Lokaler Besuchszähler: nicht verfügbar (lokaler Speicher deaktiviert).';
+      }
+    }
+
     const dpi = 300;
     const mmToInch = (mm) => mm / 25.4;
     const frames = [
@@ -233,6 +249,11 @@
         if (preview.hasPointerCapture(evt.pointerId)) {
           preview.releasePointerCapture(evt.pointerId);
         }
+        releasePointer();
+      });
+
+      preview.addEventListener('lostpointercapture', () => {
+        if (!state.dragging) return;
         releasePointer();
       });
 
