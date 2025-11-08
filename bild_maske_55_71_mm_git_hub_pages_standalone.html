@@ -23,6 +23,8 @@
     .btn:hover { background: #f2f2f2; }
     .btn:active { transform: translateY(1px); }
     .hint { color: var(--muted); font-size: 12px; }
+    .counterBox { margin-top:16px; padding:12px; border-radius:12px; border:1px solid rgba(64,99,187,.35); background:rgba(64,99,187,.08); font-size:13px; line-height:1.5; color:#23325f; }
+    .counterBox strong { display:block; font-size:14px; margin-bottom:4px; }
     .frameList { display: grid; gap: 16px; }
     .frameTitle { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
     .previewShell { border: 1px solid var(--border); margin: 0 auto; position: relative; overflow: hidden; background:#fff; border-radius: 10px; touch-action: none; cursor: default; }
@@ -47,7 +49,10 @@
         <input id="fileInput" type="file" accept="image/*" />
         <p class="hint" style="margin-top:12px">Tipp: Jede Maske kann ein eigenes Bild bekommen. Bild in der Vorschau anklicken und ziehen (auch Touch). Mit dem Mausrad zoomst du jeweils um den Zeiger herum.</p>
         <button id="exportAllPdf" class="btn" style="width:100%; margin-top:16px;" disabled>Alle 3 Masken als eine PDF exportieren</button>
-        <p id="visitCounter" class="hint" style="margin-top:16px; font-size:13px; line-height:1.4;"></p>
+        <div id="visitCounter" class="counterBox" role="status" aria-live="polite">
+          <strong>DSGVO-konformer Besuchszähler</strong>
+          <span class="counterText">Wird geladen …</span>
+        </div>
       </div>
 
       <!-- Rechte Spalte: Vorschauen -->
@@ -122,17 +127,18 @@
 
   <script>
     const visitCounterEl = document.getElementById('visitCounter');
+    const visitCounterText = visitCounterEl?.querySelector('.counterText');
 
-    if (visitCounterEl) {
+    if (visitCounterEl && visitCounterText) {
       const key = 'maskenVisitCount';
       try {
         const storage = window.localStorage;
         const previous = Number.parseInt(storage.getItem(key) || '0', 10) || 0;
         const current = previous + 1;
         storage.setItem(key, String(current));
-        visitCounterEl.textContent = `Lokaler Besuchszähler: ${current.toLocaleString('de-DE')} (bleibt nur in diesem Browser, keine Datenübertragung).`;
+        visitCounterText.textContent = `Deine Besuche: ${current.toLocaleString('de-DE')} (bleibt nur in diesem Browser, keine Datenübertragung).`;
       } catch (error) {
-        visitCounterEl.textContent = 'Lokaler Besuchszähler: nicht verfügbar (lokaler Speicher deaktiviert).';
+        visitCounterText.textContent = 'Nicht verfügbar: Lokaler Speicher wurde blockiert.';
       }
     }
 
