@@ -52,23 +52,23 @@
       <!-- Rechte Spalte: Vorschauen -->
       <div class="frameList">
         <div class="card frameCard">
-          <div class="frameTitle">Vorschau 55×71 mm (Hochformat)</div>
-          <input id="fileInput-55x71" class="frameFileInput" type="file" accept="image/*" hidden />
-          <div id="preview-55x71" class="previewShell" style="width:55mm; height:71mm;">
-            <canvas id="canvas-55x71"></canvas>
-            <label for="fileInput-55x71" id="dropHint-55x71" class="drop">Bild hierher ziehen oder klicken</label>
+          <div class="frameTitle">Vorschau 55×76 mm (Hochformat)</div>
+          <input id="fileInput-55x76" class="frameFileInput" type="file" accept="image/*" hidden />
+          <div id="preview-55x76" class="previewShell" style="width:55mm; height:76mm;">
+            <canvas id="canvas-55x76"></canvas>
+            <label for="fileInput-55x76" id="dropHint-55x76" class="drop">Bild hierher ziehen oder klicken</label>
           </div>
           <div class="controlBlock">
             <div class="row" style="justify-content:space-between;">
               <span class="label" style="margin:0">Zoom</span>
-              <span class="hint" id="zoomLabel-55x71">1.00×</span>
+              <span class="hint" id="zoomLabel-55x76">1.00×</span>
             </div>
-            <input id="zoom-55x71" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
+            <input id="zoom-55x76" type="range" min="0.1" max="5" step="0.005" value="1" style="width:100%" />
           </div>
           <div class="row buttonRow">
-            <button class="btn" data-frame="55x71" data-action="upload">Bild wählen</button>
-            <button class="btn" data-frame="55x71" data-action="reset">Zurücksetzen</button>
-            <button class="btn" data-frame="55x71" data-action="png">PNG exportieren</button>
+            <button class="btn" data-frame="55x76" data-action="upload">Bild wählen</button>
+            <button class="btn" data-frame="55x76" data-action="reset">Zurücksetzen</button>
+            <button class="btn" data-frame="55x76" data-action="png">PNG exportieren</button>
           </div>
         </div>
 
@@ -123,7 +123,7 @@
     const dpi = 300;
     const mmToInch = (mm) => mm / 25.4;
     const frames = [
-      { key: '55x71', mm: { w: 55, h: 71 } },
+      { key: '55x76', mm: { w: 55, h: 76 } },
       { key: '71x33', mm: { w: 71, h: 33 } },
       { key: '33x71', mm: { w: 33, h: 71 } }
     ];
