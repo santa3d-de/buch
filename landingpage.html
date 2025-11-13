@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hörspielbox Cover-Designer – Übersicht & Anleitung</title>
+  <meta name="description" content="Überblick, Anleitung und Ressourcen für den Coverdesigner für Hörspielbox-Hörbücher." />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7fb;
+      --fg: #171717;
+      --muted: #5a6472;
+      --accent: #5850ec;
+      --accent-dark: #4338ca;
+      --card: #ffffffd9;
+      --border: #d8dce6;
+      --shadow: 0 18px 45px -25px rgba(55, 65, 81, 0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top right, #eef2ff, var(--bg));
+      color: var(--fg);
+    }
+    header {
+      padding: 48px 16px 32px;
+      text-align: center;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-weight: 600;
+      color: var(--accent-dark);
+    }
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.4;
+    }
+    h1 {
+      margin: 18px 0 16px;
+      font-size: clamp(32px, 7vw, 48px);
+      letter-spacing: -0.02em;
+    }
+    p.lead {
+      max-width: 720px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      border: 1px solid transparent;
+    }
+    a.btn.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+    a.btn.primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    a.btn.secondary {
+      background: var(--card);
+      color: var(--accent-dark);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+    a.btn.secondary:hover { transform: translateY(-1px); }
+    main {
+      padding: 0 16px 80px;
+    }
+    .section {
+      max-width: 1080px;
+      margin: 64px auto 0;
+      display: grid;
+      gap: 32px;
+    }
+    .card-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .card {
+      padding: 22px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px -30px rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+    }
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 19px;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .steps {
+      counter-reset: step;
+    }
+    .step {
+      position: relative;
+      padding-left: 54px;
+    }
+    .step + .step { margin-top: 24px; }
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    .resources ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .resources a {
+      color: var(--accent-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .resources a:hover { text-decoration: underline; }
+    footer {
+      margin-top: 80px;
+      padding: 24px 16px 48px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 720px) {
+      header { padding: 36px 16px 18px; }
+      .step { padding-left: 46px; }
+      .step::before { width: 32px; height: 32px; border-radius: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7.5 12 4l8 3.5v9l-8 3.5-8-3.5z" />
+        <path d="M12 4v12" />
+      </svg>
+      Hörspielbox Studio
+    </div>
+    <h1>Hörspielbox Cover-Designer</h1>
+    <p class="lead">Nutze den Cover-Designer, um Bilder passgenau für deine Hörspielbox zuzuschneiden. Diese Seite erklärt dir den Ablauf, stellt Druckhinweise bereit und führt dich zu den wichtigsten Ressourcen.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="bild_maske_55_71_mm_git_hub_pages_standalone.html">Web-App öffnen</a>
+      <a class="btn secondary" href="#anleitung">Schnellanleitung</a>
+    </div>
+  </header>
+  <main>
+    <section class="section card-grid" aria-label="Highlights">
+      <article class="card">
+        <h3>Präzise mm-Masken</h3>
+        <p>Wähle zwischen drei Formaten (51×76&nbsp;mm, 71×33&nbsp;mm, 33×71&nbsp;mm) und sieh sofort, wie dein Motiv auf der Hörspielbox wirkt.</p>
+      </article>
+      <article class="card">
+        <h3>Drag &amp; Zoom Bedienung</h3>
+        <p>Positioniere dein Bild mit Drag &amp; Drop, nutze das Mausrad zum Zoomen und behalte mit einer Live-Vorschau die Kontrolle.</p>
+      </article>
+      <article class="card">
+        <h3>Export als PDF &amp; PNG</h3>
+        <p>Lade jede Maske als PNG herunter oder exportiere alle Motive gesammelt als druckfertige PDF-Datei.</p>
+      </article>
+    </section>
+
+    <section id="anleitung" class="section" aria-labelledby="anleitung-heading">
+      <div class="card">
+        <h2 id="anleitung-heading">Schritt-für-Schritt Anleitung</h2>
+        <div class="steps">
+          <div class="step">
+            <h3>Bild auswählen</h3>
+            <p>Lade ein Motiv über „Bild für alle Masken wählen“ hoch oder nutze die einzelnen Upload-Schaltflächen für unterschiedliche Motive pro Maske.</p>
+          </div>
+          <div class="step">
+            <h3>Motiv ausrichten</h3>
+            <p>Ziehe das Bild innerhalb der Vorschau in die gewünschte Position. Mit dem Zoom-Regler oder dem Mausrad passt du den Ausschnitt millimetergenau an.</p>
+          </div>
+          <div class="step">
+            <h3>Exportieren &amp; Drucken</h3>
+            <p>Speichere deine Motive als PNG oder nutze den PDF-Export für alle Rahmen. Beim Drucken unbedingt 100&nbsp;% Skalierung (ohne Seitenanpassung) wählen.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section card-grid resources" aria-label="Ressourcen">
+      <article class="card">
+        <h2>Ressourcen &amp; Tipps</h2>
+        <ul>
+          <li><a href="https://drucker-testseite.de/" target="_blank" rel="noopener">Testseite für Drucker-Kalibrierung</a></li>
+          <li><a href="https://we.tl" target="_blank" rel="noopener">Große Bilddateien mit Freunden teilen</a></li>
+          <li><a href="mailto:feedback@hoerspielbox.studio">Feedback zum Cover-Designer senden</a></li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>FAQ</h2>
+        <p><strong>Warum sieht mein Druck zu klein aus?</strong> Stelle sicher, dass dein PDF-Viewer in 100&nbsp;% bzw. „Tatsächliche Größe“ druckt.<br><br>
+        <strong>Kann ich mehrere Bilder gleichzeitig bearbeiten?</strong> Ja, jeder Rahmen merkt sich seine eigene Position und Zoomeinstellung, auch wenn du ein anderes Bild lädst.<br><br>
+        <strong>Wie exportiere ich alle Motive auf einmal?</strong> Mit der Schaltfläche „Alle 3 Masken als eine PDF exportieren“ erhältst du eine A4-Datei mit Schnittmarken.</p>
+      </article>
+    </section>
+  </main>
+  <footer>
+    © <span id="year"></span> Hörspielbox Studio · Single-File Deployment für GitHub Pages.
+  </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
