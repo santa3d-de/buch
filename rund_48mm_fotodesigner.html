@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Runder 48 mm Foto-Designer</title>
+  <title>Runde Foto-Designer – 48 mm & 65 mm</title>
   <meta
     name="description"
-    content="Einfacher Designer zum Platzieren und Exportieren eines Fotos in einer runden 48 mm-Maske."
+    content="Single-Page-Designer zum Platzieren und Exportieren von Fotos in runden 48 mm- und 65 mm-Masken mit PNG- und PDF-Ausgabe."
   />
   <style>
     :root {
@@ -18,8 +18,11 @@
       --border: rgba(148, 163, 184, 0.45);
       --accent: #2563eb;
       --accent-dark: #1d4ed8;
+      --shadow: 0 24px 40px -28px rgba(15, 23, 42, 0.35);
     }
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -36,38 +39,40 @@
       letter-spacing: -0.02em;
     }
     p.lead {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       color: var(--muted);
       font-size: 18px;
       line-height: 1.6;
     }
     main {
-      padding: 0 16px 72px;
+      padding: 0 16px 80px;
     }
     .layout {
-      max-width: 1040px;
+      max-width: 1080px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(280px, 320px) minmax(320px, 1fr);
       gap: 24px;
-    }
-    @media (max-width: 960px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 24px;
-      box-shadow: 0 24px 40px -28px rgba(15, 23, 42, 0.35);
+      box-shadow: var(--shadow);
       backdrop-filter: blur(6px);
     }
     .card h2 {
       margin-top: 0;
       font-size: 20px;
+    }
+    .info-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
     }
     label.label {
       display: block;
@@ -86,11 +91,13 @@
       background: #fff;
       font-size: 14px;
     }
-    .hint {
-      margin-top: 12px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
+    input[type="number"] {
+      width: 120px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background: #fff;
     }
     .actions {
       display: flex;
@@ -129,15 +136,15 @@
     button.btn.secondary:hover {
       transform: translateY(-1px);
     }
-    .preview-card {
+    .designer-card {
       display: flex;
       flex-direction: column;
       gap: 18px;
     }
     .preview-shell {
       position: relative;
-      width: 48mm;
-      height: 48mm;
+      width: var(--diameter, 48mm);
+      height: var(--diameter, 48mm);
       margin: 0 auto;
       border-radius: 50%;
       border: 2px dashed rgba(37, 99, 235, 0.35);
@@ -177,11 +184,23 @@
       flex: 1;
       accent-color: var(--accent);
     }
-    .info-list {
-      margin: 0;
-      padding-left: 18px;
+    .quantity-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: -6px;
+    }
+    .quantity-row span {
+      font-size: 13px;
       color: var(--muted);
-      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
       line-height: 1.6;
     }
     footer {
@@ -195,51 +214,100 @@
 </head>
 <body>
   <header>
-    <h1>Designer für runde 48 mm-Fotos</h1>
+    <h1>Designer für runde Fotos</h1>
     <p class="lead">
       Lade ein Motiv, positioniere es in einer hochauflösenden runden Maske und exportiere die perfekte Vorlage
-      für Aufkleber, Buttons oder Cover mit 48 mm Durchmesser.
+      für Aufkleber, Buttons oder Cover mit 48 mm oder 65 mm Durchmesser.
     </p>
   </header>
   <main>
     <div class="layout">
-      <section class="card">
-        <h2>Bild importieren</h2>
-        <label class="label" for="fileInput">Datei wählen</label>
-        <input id="fileInput" type="file" accept="image/*" />
-        <p class="hint">
-          Jede Änderung der Position oder des Zooms wird automatisch in der Vorschau angezeigt. Ziehe das Bild mit der Maus
-          oder dem Finger in die gewünschte Position. Mit dem Mausrad oder dem Zoom-Regler passt du die Größe an.
-        </p>
-        <div class="actions">
-          <button id="btnOpen" class="btn secondary" type="button">Neues Bild wählen</button>
-          <button id="btnReset" class="btn secondary" type="button" disabled>Bild zentrieren</button>
-        </div>
-        <div class="actions">
-          <button id="btnPng" class="btn primary" type="button" disabled>Als PNG exportieren</button>
-          <button id="btnPdf" class="btn primary" type="button" disabled>Als PDF exportieren</button>
-        </div>
+      <section class="card info-card">
+        <h2>Schnelle Anleitung</h2>
+        <ul>
+          <li>Bild über den Button „Datei wählen“ laden oder direkt in die Vorschau ziehen.</li>
+          <li>Mit Drag &amp; Drop positionieren, mit dem Regler oder Mausrad zoomen.</li>
+          <li>Export als PNG (freigestellt) oder PDF. Im PDF lässt sich jetzt eine Anzahl von Drucken setzen.</li>
+          <li>Drucktipp: In 100 % Skalierung ohne „An Seite anpassen“ ausgeben.</li>
+        </ul>
       </section>
 
-      <section class="card preview-card">
-        <div class="preview-shell" id="preview">
-          <canvas id="canvas"></canvas>
-          <div id="dropHint" class="drop-hint">Bild hierher ziehen oder tippen</div>
+      <section
+        class="card designer-card"
+        data-designer
+        data-mm="48"
+        data-label="48 mm"
+        data-filename="foto-rund-48mm"
+      >
+        <h2>Rundes Foto – 48 mm</h2>
+        <div>
+          <label class="label" for="fileInput-48">Datei wählen</label>
+          <input id="fileInput-48" class="file-input" type="file" accept="image/*" />
+        </div>
+        <div class="preview-shell" style="--diameter: 48mm;" id="preview-48">
+          <canvas></canvas>
+          <div class="drop-hint">Bild hierher ziehen oder tippen</div>
         </div>
         <div class="range-row">
           <span>Zoom</span>
-          <input id="zoom" type="range" min="0.1" max="5" step="0.005" value="1" />
-          <span id="zoomLabel">1.00×</span>
+          <input class="zoom-input" type="range" min="0.1" max="5" step="0.005" value="1" />
+          <span class="zoom-label">1.00×</span>
         </div>
-        <div class="hint">
-          Halte beim Zoomen den Mauszeiger über den interessanten Bereich, damit der Fokus erhalten bleibt. Für einen
-          präzisen Druck unbedingt mit 100 % Skalierung drucken.
+        <div class="quantity-row">
+          <span>Anzahl Drucke</span>
+          <input class="quantity-input" type="number" min="1" max="48" value="1" />
         </div>
-        <ul class="info-list">
-          <li>Arbeitsauflösung: 300 DPI &rarr; 48 mm entsprechen 567 × 567 px.</li>
-          <li>PNG-Export liefert transparente Ränder außerhalb der Kreisfläche.</li>
-          <li>PDF-Export platziert das Motiv mittig auf einer A4-Seite inklusive Schnittkreis.</li>
-        </ul>
+        <p class="hint">
+          Arbeitsauflösung: 300 DPI → 48 mm entsprechen 567 × 567 px. Der PDF-Export platziert so viele Kopien auf A4-Seiten,
+          wie du oben eingestellt hast – inklusive Schnittkreis.
+        </p>
+        <div class="actions">
+          <button class="btn secondary" data-action="open" type="button">Neues Bild wählen</button>
+          <button class="btn secondary" data-action="reset" type="button" disabled>Bild zentrieren</button>
+        </div>
+        <div class="actions">
+          <button class="btn primary" data-action="png" type="button" disabled>Als PNG exportieren</button>
+          <button class="btn primary" data-action="pdf" type="button" disabled>Als PDF exportieren</button>
+        </div>
+      </section>
+
+      <section
+        class="card designer-card"
+        data-designer
+        data-mm="65"
+        data-label="65 mm"
+        data-filename="foto-rund-65mm"
+      >
+        <h2>Rundes Foto – 65 mm</h2>
+        <div>
+          <label class="label" for="fileInput-65">Datei wählen</label>
+          <input id="fileInput-65" class="file-input" type="file" accept="image/*" />
+        </div>
+        <div class="preview-shell" style="--diameter: 65mm;" id="preview-65">
+          <canvas></canvas>
+          <div class="drop-hint">Bild hierher ziehen oder tippen</div>
+        </div>
+        <div class="range-row">
+          <span>Zoom</span>
+          <input class="zoom-input" type="range" min="0.1" max="5" step="0.005" value="1" />
+          <span class="zoom-label">1.00×</span>
+        </div>
+        <div class="quantity-row">
+          <span>Anzahl Drucke</span>
+          <input class="quantity-input" type="number" min="1" max="48" value="1" />
+        </div>
+        <p class="hint">
+          Arbeitsauflösung: 300 DPI → 65 mm entsprechen 768 × 768 px. Der Export erzeugt mehrere runde Masken, perfekt für
+          größere Sticker oder Buttons.
+        </p>
+        <div class="actions">
+          <button class="btn secondary" data-action="open" type="button">Neues Bild wählen</button>
+          <button class="btn secondary" data-action="reset" type="button" disabled>Bild zentrieren</button>
+        </div>
+        <div class="actions">
+          <button class="btn primary" data-action="png" type="button" disabled>Als PNG exportieren</button>
+          <button class="btn primary" data-action="pdf" type="button" disabled>Als PDF exportieren</button>
+        </div>
       </section>
     </div>
   </main>
@@ -247,343 +315,393 @@
 
   <script>
     const dpi = 300;
-    const mmDiameter = 48;
     const mmToInch = (mm) => mm / 25.4;
-    const pxSize = Math.round(mmToInch(mmDiameter) * dpi);
 
-    const preview = document.getElementById('preview');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = pxSize;
-    canvas.height = pxSize;
-
-    const fileInput = document.getElementById('fileInput');
-    const btnOpen = document.getElementById('btnOpen');
-    const btnReset = document.getElementById('btnReset');
-    const btnPng = document.getElementById('btnPng');
-    const btnPdf = document.getElementById('btnPdf');
-    const dropHint = document.getElementById('dropHint');
-    const zoomInput = document.getElementById('zoom');
-    const zoomLabel = document.getElementById('zoomLabel');
-
-    const state = {
-      img: null,
-      naturalW: 0,
-      naturalH: 0,
-      scale: 1,
-      coverScale: 1,
-      offsetX: 0,
-      offsetY: 0,
-      dragging: false,
-      pointerId: null,
-      startPointerX: 0,
-      startPointerY: 0,
-      startOffsetX: 0,
-      startOffsetY: 0,
-    };
-
-    function updateButtons() {
-      const active = Boolean(state.img);
-      btnReset.disabled = !active;
-      btnPng.disabled = !active;
-      btnPdf.disabled = !active;
-      zoomInput.disabled = !active;
+    function sanitizeQuantity(input) {
+      let value = parseInt(input.value, 10);
+      if (!Number.isFinite(value) || value < 1) value = 1;
+      if (value > 48) value = 48;
+      input.value = String(value);
+      return value;
     }
 
-    function updateZoomLabel() {
-      zoomLabel.textContent = state.scale.toFixed(2) + '\u00d7';
-    }
+    function createRoundDesigner(root) {
+      const mmDiameter = Number(root.dataset.mm);
+      const label = root.dataset.label || `${mmDiameter} mm`;
+      const fileBase = root.dataset.filename || `foto-rund-${mmDiameter}mm`;
+      const preview = root.querySelector('.preview-shell');
+      const canvas = root.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const pxSize = Math.round(mmToInch(mmDiameter) * dpi);
+      canvas.width = pxSize;
+      canvas.height = pxSize;
 
-    function updateDropHint() {
-      if (state.img) {
-        dropHint.style.display = 'none';
-      } else {
-        dropHint.textContent = 'Bild hierher ziehen oder tippen';
-        dropHint.style.display = 'grid';
+      const fileInput = root.querySelector('.file-input');
+      const dropHint = root.querySelector('.drop-hint');
+      const btnOpen = root.querySelector('[data-action="open"]');
+      const btnReset = root.querySelector('[data-action="reset"]');
+      const btnPng = root.querySelector('[data-action="png"]');
+      const btnPdf = root.querySelector('[data-action="pdf"]');
+      const zoomInput = root.querySelector('.zoom-input');
+      const zoomLabel = root.querySelector('.zoom-label');
+      const quantityInput = root.querySelector('.quantity-input');
+
+      const state = {
+        img: null,
+        naturalW: 0,
+        naturalH: 0,
+        scale: 1,
+        coverScale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        dragging: false,
+        pointerId: null,
+        startPointerX: 0,
+        startPointerY: 0,
+        startOffsetX: 0,
+        startOffsetY: 0,
+      };
+
+      function updateButtons() {
+        const active = Boolean(state.img);
+        btnReset.disabled = !active;
+        btnPng.disabled = !active;
+        btnPdf.disabled = !active;
+        zoomInput.disabled = !active;
       }
-    }
 
-    function clampOffsets() {
-      if (!state.img) return;
-      const halfFrame = canvas.width / 2;
-      const drawW = state.naturalW * state.scale;
-      const drawH = state.naturalH * state.scale;
-      const halfImageW = drawW / 2;
-      const halfImageH = drawH / 2;
-      const limitX = Math.max(0, halfImageW - halfFrame);
-      const limitY = Math.max(0, halfImageH - halfFrame);
-      state.offsetX = Math.min(limitX, Math.max(-limitX, state.offsetX));
-      state.offsetY = Math.min(limitY, Math.max(-limitY, state.offsetY));
-    }
+      function updateZoomLabel() {
+        zoomLabel.textContent = state.scale.toFixed(2) + '\u00d7';
+      }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.beginPath();
-      ctx.arc(0, 0, canvas.width / 2, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
-      if (state.img) {
+      function updateDropHint() {
+        dropHint.style.display = state.img ? 'none' : 'grid';
+        if (!state.img) {
+          dropHint.textContent = 'Bild hierher ziehen oder tippen';
+        }
+      }
+
+      function clampOffsets() {
+        if (!state.img) return;
+        const halfFrame = canvas.width / 2;
         const drawW = state.naturalW * state.scale;
         const drawH = state.naturalH * state.scale;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(
-          state.img,
-          state.offsetX - drawW / 2,
-          state.offsetY - drawH / 2,
-          drawW,
-          drawH
-        );
+        const halfImageW = drawW / 2;
+        const halfImageH = drawH / 2;
+        const limitX = Math.max(0, halfImageW - halfFrame);
+        const limitY = Math.max(0, halfImageH - halfFrame);
+        state.offsetX = Math.min(limitX, Math.max(-limitX, state.offsetX));
+        state.offsetY = Math.min(limitY, Math.max(-limitY, state.offsetY));
       }
-      ctx.restore();
 
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#1f2937';
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - ctx.lineWidth / 2, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.beginPath();
+        ctx.arc(0, 0, canvas.width / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+        if (state.img) {
+          const drawW = state.naturalW * state.scale;
+          const drawH = state.naturalH * state.scale;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(
+            state.img,
+            state.offsetX - drawW / 2,
+            state.offsetY - drawH / 2,
+            drawW,
+            drawH
+          );
+        }
+        ctx.restore();
 
-    function setScale(nextScale) {
-      const min = parseFloat(zoomInput.min);
-      const max = parseFloat(zoomInput.max);
-      state.scale = Math.min(max, Math.max(min, nextScale));
-      zoomInput.value = String(state.scale);
-      updateZoomLabel();
-      clampOffsets();
-      draw();
-    }
-
-    function fitImage() {
-      if (!state.img) return;
-      state.coverScale = Math.max(canvas.width / state.naturalW, canvas.height / state.naturalH);
-      const minScale = state.coverScale;
-      const maxScale = Math.max(4 * state.coverScale, minScale + 0.5);
-      zoomInput.min = String(minScale);
-      zoomInput.max = String(maxScale);
-      zoomInput.step = String(Math.max((maxScale - minScale) / 200, 0.0005));
-      state.offsetX = 0;
-      state.offsetY = 0;
-      setScale(state.coverScale);
-    }
-
-    function ensureImage() {
-      if (!state.img) {
-        alert('Bitte zuerst ein Bild laden.');
-        return false;
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#1f2937';
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - ctx.lineWidth / 2, 0, Math.PI * 2);
+        ctx.stroke();
       }
-      return true;
-    }
 
-    function exportPNG() {
-      if (!ensureImage()) return;
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = canvas.width;
-      exportCanvas.height = canvas.height;
-      const exportCtx = exportCanvas.getContext('2d');
-
-      exportCtx.save();
-      exportCtx.translate(exportCanvas.width / 2, exportCanvas.height / 2);
-      exportCtx.beginPath();
-      exportCtx.arc(0, 0, exportCanvas.width / 2, 0, Math.PI * 2);
-      exportCtx.clip();
-      exportCtx.fillStyle = '#ffffff';
-      exportCtx.fillRect(-exportCanvas.width / 2, -exportCanvas.height / 2, exportCanvas.width, exportCanvas.height);
-      if (state.img) {
-        const drawW = state.naturalW * state.scale;
-        const drawH = state.naturalH * state.scale;
-        exportCtx.imageSmoothingQuality = 'high';
-        exportCtx.drawImage(
-          state.img,
-          state.offsetX - drawW / 2,
-          state.offsetY - drawH / 2,
-          drawW,
-          drawH
-        );
+      function setScale(nextScale) {
+        const min = parseFloat(zoomInput.min);
+        const max = parseFloat(zoomInput.max);
+        state.scale = Math.min(max, Math.max(min, nextScale));
+        zoomInput.value = String(state.scale);
+        updateZoomLabel();
+        clampOffsets();
+        draw();
       }
-      exportCtx.restore();
 
-      exportCtx.globalCompositeOperation = 'destination-in';
-      exportCtx.beginPath();
-      exportCtx.arc(exportCanvas.width / 2, exportCanvas.height / 2, exportCanvas.width / 2, 0, Math.PI * 2);
-      exportCtx.fill();
-
-      const url = exportCanvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'foto-rund-48mm.png';
-      a.click();
-    }
-
-    function exportPDF() {
-      if (!ensureImage()) return;
-      try {
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF) throw new Error('jsPDF nicht verfügbar');
-        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const header = 'Bitte mit 100% Skalierung ("Tatsächliche Größe") drucken!';
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text(header, pageW / 2, 18, { align: 'center' });
-
-        const imgData = canvas.toDataURL('image/png');
-        const x = (pageW - mmDiameter) / 2;
-        const y = (pageH - mmDiameter) / 2 + 12;
-        pdf.addImage(imgData, 'PNG', x, y, mmDiameter, mmDiameter);
-        pdf.setDrawColor(60);
-        pdf.setLineWidth(0.25);
-        pdf.circle(pageW / 2, y + mmDiameter / 2, mmDiameter / 2);
-        pdf.save('foto-rund-48mm.pdf');
-      } catch (err) {
-        alert('PDF-Export fehlgeschlagen: ' + err.message);
-        console.error(err);
+      function fitImage() {
+        if (!state.img) return;
+        state.coverScale = Math.max(canvas.width / state.naturalW, canvas.height / state.naturalH);
+        const minScale = state.coverScale;
+        const maxScale = Math.max(4 * state.coverScale, minScale + 0.5);
+        zoomInput.min = String(minScale);
+        zoomInput.max = String(maxScale);
+        zoomInput.step = String(Math.max((maxScale - minScale) / 200, 0.0005));
+        state.offsetX = 0;
+        state.offsetY = 0;
+        setScale(state.coverScale);
       }
-    }
 
-    function loadDataUrl(dataUrl) {
-      const image = new Image();
-      image.onload = () => {
-        state.img = image;
-        state.naturalW = image.naturalWidth;
-        state.naturalH = image.naturalHeight;
+      function ensureImage() {
+        if (!state.img) {
+          alert('Bitte zuerst ein Bild laden.');
+          return false;
+        }
+        return true;
+      }
+
+      function exportPNG() {
+        if (!ensureImage()) return;
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = canvas.width;
+        exportCanvas.height = canvas.height;
+        const exportCtx = exportCanvas.getContext('2d');
+
+        exportCtx.save();
+        exportCtx.translate(exportCanvas.width / 2, exportCanvas.height / 2);
+        exportCtx.beginPath();
+        exportCtx.arc(0, 0, exportCanvas.width / 2, 0, Math.PI * 2);
+        exportCtx.clip();
+        exportCtx.fillStyle = '#ffffff';
+        exportCtx.fillRect(-exportCanvas.width / 2, -exportCanvas.height / 2, exportCanvas.width, exportCanvas.height);
+        if (state.img) {
+          const drawW = state.naturalW * state.scale;
+          const drawH = state.naturalH * state.scale;
+          exportCtx.imageSmoothingQuality = 'high';
+          exportCtx.drawImage(
+            state.img,
+            state.offsetX - drawW / 2,
+            state.offsetY - drawH / 2,
+            drawW,
+            drawH
+          );
+        }
+        exportCtx.restore();
+
+        exportCtx.globalCompositeOperation = 'destination-in';
+        exportCtx.beginPath();
+        exportCtx.arc(exportCanvas.width / 2, exportCanvas.height / 2, exportCanvas.width / 2, 0, Math.PI * 2);
+        exportCtx.fill();
+
+        const url = exportCanvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileBase}.png`;
+        a.click();
+      }
+
+      function exportPDF() {
+        if (!ensureImage()) return;
+        sanitizeQuantity(quantityInput);
+        try {
+          const { jsPDF } = window.jspdf || {};
+          if (!jsPDF) throw new Error('jsPDF nicht verfügbar');
+          const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+          const pageW = pdf.internal.pageSize.getWidth();
+          const pageH = pdf.internal.pageSize.getHeight();
+          const header = 'Bitte mit 100% Skalierung ("Tatsächliche Größe") drucken!';
+          const quantity = sanitizeQuantity(quantityInput);
+          const addHeader = () => {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text(header, pageW / 2, 18, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            pdf.text(`Layout: ${label} – ${quantity} Exemplar(e)`, pageW / 2, 24, {
+              align: 'center',
+            });
+          };
+
+          addHeader();
+          const imgData = canvas.toDataURL('image/png');
+          const marginX = 15;
+          const marginY = 32;
+          const spacing = 8;
+          const perRow = Math.max(1, Math.floor((pageW - marginX * 2 + spacing) / (mmDiameter + spacing)));
+          let copiesPlaced = 0;
+          let rowIndex = 0;
+
+          while (copiesPlaced < quantity) {
+            const y = marginY + rowIndex * (mmDiameter + spacing);
+            if (y + mmDiameter > pageH - marginY) {
+              pdf.addPage();
+              addHeader();
+              rowIndex = 0;
+              continue;
+            }
+
+            for (let colIndex = 0; colIndex < perRow && copiesPlaced < quantity; colIndex += 1) {
+              const x = marginX + colIndex * (mmDiameter + spacing);
+              pdf.addImage(imgData, 'PNG', x, y, mmDiameter, mmDiameter);
+              pdf.setDrawColor(60);
+              pdf.setLineWidth(0.25);
+              pdf.circle(x + mmDiameter / 2, y + mmDiameter / 2, mmDiameter / 2);
+              copiesPlaced += 1;
+            }
+            rowIndex += 1;
+          }
+
+          pdf.save(`${fileBase}.pdf`);
+        } catch (err) {
+          alert('PDF-Export fehlgeschlagen: ' + err.message);
+          console.error(err);
+        }
+      }
+
+      function loadDataUrl(dataUrl) {
+        const image = new Image();
+        image.onload = () => {
+          state.img = image;
+          state.naturalW = image.naturalWidth;
+          state.naturalH = image.naturalHeight;
+          fitImage();
+          updateDropHint();
+          updateButtons();
+        };
+        image.onerror = () => alert('Bild konnte nicht geladen werden.');
+        image.src = dataUrl;
+      }
+
+      function handleFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => loadDataUrl(event.target.result);
+        reader.readAsDataURL(file);
+      }
+
+      function getCanvasPoint(evt) {
+        const rect = preview.getBoundingClientRect();
+        const point = evt.touches ? evt.touches[0] : evt;
+        const ratioX = canvas.width / rect.width;
+        const ratioY = canvas.height / rect.height;
+        return {
+          x: (point.clientX - rect.left) * ratioX,
+          y: (point.clientY - rect.top) * ratioY,
+        };
+      }
+
+      function updateCursor() {
+        preview.style.cursor = state.img ? (state.dragging ? 'grabbing' : 'grab') : 'default';
+      }
+
+      preview.addEventListener('pointerdown', (evt) => {
+        if (!state.img) return;
+        if (typeof evt.button === 'number' && evt.button !== 0) return;
+        const p = getCanvasPoint(evt);
+        state.startPointerX = p.x - canvas.width / 2;
+        state.startPointerY = p.y - canvas.height / 2;
+        state.startOffsetX = state.offsetX;
+        state.startOffsetY = state.offsetY;
+        state.dragging = true;
+        state.pointerId = evt.pointerId;
+        preview.setPointerCapture(evt.pointerId);
+        updateCursor();
+        evt.preventDefault();
+      });
+
+      preview.addEventListener('pointermove', (evt) => {
+        if (!state.dragging || evt.pointerId !== state.pointerId) return;
+        const p = getCanvasPoint(evt);
+        const relX = p.x - canvas.width / 2;
+        const relY = p.y - canvas.height / 2;
+        state.offsetX = state.startOffsetX + (relX - state.startPointerX);
+        state.offsetY = state.startOffsetY + (relY - state.startPointerY);
+        clampOffsets();
+        draw();
+        evt.preventDefault();
+      });
+
+      const releasePointer = (evt) => {
+        if (!state.dragging) return;
+        if (evt && evt.pointerId !== state.pointerId) return;
+        if (state.pointerId !== null && preview.hasPointerCapture(state.pointerId)) {
+          preview.releasePointerCapture(state.pointerId);
+        }
+        state.dragging = false;
+        state.pointerId = null;
+        updateCursor();
+      };
+
+      preview.addEventListener('pointerup', releasePointer);
+      preview.addEventListener('pointercancel', releasePointer);
+      preview.addEventListener('lostpointercapture', () => {
+        if (!state.dragging) return;
+        state.dragging = false;
+        state.pointerId = null;
+        updateCursor();
+      });
+
+      preview.addEventListener('wheel', (evt) => {
+        if (!state.img) return;
+        evt.preventDefault();
+        const factor = evt.deltaY > 0 ? 0.9 : 1.1;
+        const rect = preview.getBoundingClientRect();
+        const pointerX = (evt.clientX - rect.left) * (canvas.width / rect.width) - canvas.width / 2;
+        const pointerY = (evt.clientY - rect.top) * (canvas.height / rect.height) - canvas.height / 2;
+        const prevScale = state.scale;
+        const imageRelX = (pointerX - state.offsetX) / prevScale;
+        const imageRelY = (pointerY - state.offsetY) / prevScale;
+        setScale(state.scale * factor);
+        state.offsetX = pointerX - imageRelX * state.scale;
+        state.offsetY = pointerY - imageRelY * state.scale;
+        clampOffsets();
+        draw();
+      }, { passive: false });
+
+      zoomInput.addEventListener('input', () => setScale(parseFloat(zoomInput.value)));
+      btnReset.addEventListener('click', () => {
         fitImage();
-        updateDropHint();
-        updateButtons();
-      };
-      image.onerror = () => alert('Bild konnte nicht geladen werden.');
-      image.src = dataUrl;
-    }
-
-    function handleFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => loadDataUrl(event.target.result);
-      reader.readAsDataURL(file);
-    }
-
-    function getCanvasPoint(evt) {
-      const rect = preview.getBoundingClientRect();
-      const point = evt.touches ? evt.touches[0] : evt;
-      const ratioX = canvas.width / rect.width;
-      const ratioY = canvas.height / rect.height;
-      return {
-        x: (point.clientX - rect.left) * ratioX,
-        y: (point.clientY - rect.top) * ratioY,
-      };
-    }
-
-    function updateCursor() {
-      if (!state.img) {
-        preview.style.cursor = 'default';
-      } else {
-        preview.style.cursor = state.dragging ? 'grabbing' : 'grab';
-      }
-    }
-
-    preview.addEventListener('pointerdown', (evt) => {
-      if (!state.img) return;
-      if (typeof evt.button === 'number' && evt.button !== 0) return;
-      const p = getCanvasPoint(evt);
-      state.startPointerX = p.x - canvas.width / 2;
-      state.startPointerY = p.y - canvas.height / 2;
-      state.startOffsetX = state.offsetX;
-      state.startOffsetY = state.offsetY;
-      state.dragging = true;
-      state.pointerId = evt.pointerId;
-      preview.setPointerCapture(evt.pointerId);
-      updateCursor();
-      evt.preventDefault();
-    });
-
-    preview.addEventListener('pointermove', (evt) => {
-      if (!state.dragging || evt.pointerId !== state.pointerId) return;
-      const p = getCanvasPoint(evt);
-      const relX = p.x - canvas.width / 2;
-      const relY = p.y - canvas.height / 2;
-      state.offsetX = state.startOffsetX + (relX - state.startPointerX);
-      state.offsetY = state.startOffsetY + (relY - state.startPointerY);
-      clampOffsets();
-      draw();
-      evt.preventDefault();
-    });
-
-    const releasePointer = (evt) => {
-      if (!state.dragging) return;
-      if (evt && evt.pointerId !== state.pointerId) return;
-      if (state.pointerId !== null && preview.hasPointerCapture(state.pointerId)) {
-        preview.releasePointerCapture(state.pointerId);
-      }
-      state.dragging = false;
-      state.pointerId = null;
-      updateCursor();
-    };
-
-    preview.addEventListener('pointerup', releasePointer);
-    preview.addEventListener('pointercancel', releasePointer);
-    preview.addEventListener('lostpointercapture', () => {
-      if (!state.dragging) return;
-      state.dragging = false;
-      state.pointerId = null;
-      updateCursor();
-    });
-
-    preview.addEventListener('wheel', (evt) => {
-      if (!state.img) return;
-      evt.preventDefault();
-      const factor = evt.deltaY > 0 ? 0.9 : 1.1;
-      const rect = preview.getBoundingClientRect();
-      const pointerX = (evt.clientX - rect.left) * (canvas.width / rect.width) - canvas.width / 2;
-      const pointerY = (evt.clientY - rect.top) * (canvas.height / rect.height) - canvas.height / 2;
-      const prevScale = state.scale;
-      const imageRelX = (pointerX - state.offsetX) / prevScale;
-      const imageRelY = (pointerY - state.offsetY) / prevScale;
-      setScale(state.scale * factor);
-      state.offsetX = pointerX - imageRelX * state.scale;
-      state.offsetY = pointerY - imageRelY * state.scale;
-      clampOffsets();
-      draw();
-    }, { passive: false });
-
-    zoomInput.addEventListener('input', () => setScale(parseFloat(zoomInput.value)));
-    btnReset.addEventListener('click', () => { fitImage(); });
-    btnPng.addEventListener('click', exportPNG);
-    btnPdf.addEventListener('click', exportPDF);
-
-    btnOpen.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (evt) => {
-      handleFile(evt.target.files && evt.target.files[0]);
-      evt.target.value = '';
-    });
-
-    ['dragenter', 'dragover'].forEach((eventName) => {
-      preview.addEventListener(eventName, (evt) => {
-        evt.preventDefault();
-        dropHint.textContent = 'Loslassen zum Laden…';
-        dropHint.style.display = 'grid';
       });
-    });
+      btnPng.addEventListener('click', exportPNG);
+      btnPdf.addEventListener('click', exportPDF);
+      btnOpen.addEventListener('click', () => fileInput.click());
 
-    ['dragleave', 'dragend', 'drop'].forEach((eventName) => {
-      preview.addEventListener(eventName, (evt) => {
-        evt.preventDefault();
-        updateDropHint();
+      fileInput.addEventListener('change', (evt) => {
+        handleFile(evt.target.files && evt.target.files[0]);
+        evt.target.value = '';
       });
-    });
 
-    preview.addEventListener('drop', (evt) => {
-      const file = evt.dataTransfer && evt.dataTransfer.files && evt.dataTransfer.files[0];
-      handleFile(file);
-    });
+      quantityInput.addEventListener('change', () => {
+        sanitizeQuantity(quantityInput);
+      });
+      quantityInput.addEventListener('blur', () => {
+        sanitizeQuantity(quantityInput);
+      });
 
-    draw();
-    updateButtons();
-    updateDropHint();
-    updateZoomLabel();
-    zoomInput.disabled = true;
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        preview.addEventListener(eventName, (evt) => {
+          evt.preventDefault();
+          dropHint.textContent = 'Loslassen zum Laden…';
+          dropHint.style.display = 'grid';
+        });
+      });
+
+      ['dragleave', 'dragend', 'drop'].forEach((eventName) => {
+        preview.addEventListener(eventName, (evt) => {
+          evt.preventDefault();
+          updateDropHint();
+        });
+      });
+
+      preview.addEventListener('drop', (evt) => {
+        const file = evt.dataTransfer && evt.dataTransfer.files && evt.dataTransfer.files[0];
+        handleFile(file);
+      });
+
+      draw();
+      updateButtons();
+      updateDropHint();
+      updateZoomLabel();
+      zoomInput.disabled = true;
+      updateCursor();
+    }
+
+    document.querySelectorAll('[data-designer]').forEach((root) => createRoundDesigner(root));
   </script>
 </body>
 </html>
